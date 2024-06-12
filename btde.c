@@ -142,7 +142,7 @@ void paintMenu() {
 
 
   /*Title*/
-  printf("  BACKUP T/D Extractor 1.01\n");
+  printf("  BACKUP T/D Extractor 1.02\n");
   printf("  (c) 2024 BAKTRA Software\n\n");
 
   /*Menu items*/
