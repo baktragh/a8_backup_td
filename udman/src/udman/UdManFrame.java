@@ -30,10 +30,13 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiFile = new javax.swing.JMenu();
         jmiOpen = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jmiRename = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(TITLE_BASE);
+        getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
 
         jlsFiles.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
         jlsFiles.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -54,6 +57,17 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmiFile.add(jmiOpen);
         jmiFile.add(jSeparator1);
+
+        jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiRename.setMnemonic('R');
+        jmiRename.setText("Rename...");
+        jmiRename.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onRename(evt);
+            }
+        });
+        jmiFile.add(jmiRename);
+        jmiFile.add(jSeparator2);
 
         jmiExit.setMnemonic('x');
         jmiExit.setText("Exit");
@@ -85,6 +99,32 @@ public class UdManFrame extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_onOpenDiskImage
+
+    private void onRename(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRename
+        
+        /*Check if something selected*/
+        int selectedIndex = jlsFiles.getSelectedIndex();
+        if (selectedIndex==-1) return;
+        
+        /*Get the selected item*/
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        FileProxy fp = dlm.getElementAt(selectedIndex);
+        
+        /*Show the dialog*/
+        RenameDialog rDialog = new RenameDialog(this,true,fp.getNameChars());
+        rDialog.pack();
+        Udman.centerContainer(rDialog);
+        rDialog.setVisible(true);
+        
+        /*If a new value was set, update the model*/
+        if (rDialog.getUpdatedNameChars()!=null) {
+            fp.setNameChars(rDialog.getUpdatedNameChars());
+            dlm.itemUpdate(fp);
+        }
+        
+        
+        
+    }//GEN-LAST:event_onRename
 
     /**
      * @param args the command line arguments
@@ -129,10 +169,12 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JFileChooser fcOpen;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenu jmiFile;
     private javax.swing.JMenuItem jmiOpen;
+    private javax.swing.JMenuItem jmiRename;
     private javax.swing.JScrollPane jspScrollFiles;
     // End of variables declaration//GEN-END:variables
 

@@ -18,6 +18,7 @@ public class UtilityDisk {
     
     private String idString;
     private boolean isPristine;
+    private int dummySectorCount;
     
     private final List<FileProxy> fileProxies;
     private final String fileName;
@@ -109,13 +110,15 @@ public class UtilityDisk {
     
     
     private void readIdentification(BufferedInputStream bis) throws IOException {
+    
+        dummySectorCount=0;
         
         /*Read the ID sector and pristine sector*/
-        
         while (true) {
 
             idSectorData = readSector(bis);
             if (idSectorData[0] == 0x00) {
+                dummySectorCount++;
                 continue;
             }
 

@@ -41,4 +41,11 @@ public class DiskListModel extends AbstractListModel<FileProxy> {
         }
     }
 
+    void itemUpdate(FileProxy fp) {
+        int index = disk.getProxies().indexOf(fp);
+        if (index!=-1) {
+            fireContentsChanged(this, index, index);
+        }
+    }
+
 }
