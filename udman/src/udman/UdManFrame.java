@@ -34,6 +34,9 @@ public class UdManFrame extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jmiRename = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jmiSave = new javax.swing.JMenuItem();
+        jmiSaveAs = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
         jmEdit = new javax.swing.JMenu();
         jmiSelectNone = new javax.swing.JMenuItem();
@@ -82,6 +85,24 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmFile.add(jmiRename);
         jmFile.add(jSeparator2);
+
+        jmiSave.setMnemonic('S');
+        jmiSave.setText("Save");
+        jmiSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onSave(evt);
+            }
+        });
+        jmFile.add(jmiSave);
+
+        jmiSaveAs.setText("Save as...");
+        jmiSaveAs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onSave(evt);
+            }
+        });
+        jmFile.add(jmiSaveAs);
+        jmFile.add(jSeparator3);
 
         jmiExit.setMnemonic('x');
         jmiExit.setText("Exit");
@@ -211,6 +232,32 @@ public class UdManFrame extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_onExit
 
+    private void onSave(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSave
+        boolean askForSpec = false;
+        if (evt.getSource()==jmiSaveAs) askForSpec=true;
+        
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        String filespec = dlm.getDisk().getFilespec();
+        
+        if (askForSpec) {
+            int result = fcOpen.showSaveDialog(this);
+            if (result!=JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile()==null) return;
+            filespec = fcOpen.getSelectedFile().getAbsolutePath();
+        }
+        
+        try {
+            dlm.getDisk().writeImage(filespec);
+            if (askForSpec) dlm.getDisk().setFilespec(filespec);
+            updateStatus(dlm.getDisk());
+        }
+        catch (IOException ioe) {
+            String excMessage = ioe.getMessage();
+            if (excMessage==null) excMessage="General I/O Error";
+            JOptionPane.showMessageDialog(this, excMessage, "Unable to save disk image", JOptionPane.ERROR);
+        }
+        
+    }//GEN-LAST:event_onSave
+
     /**
      * @param args the command line arguments
      */
@@ -255,6 +302,7 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
@@ -263,6 +311,8 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
     private javax.swing.JMenuItem jmiRename;
+    private javax.swing.JMenuItem jmiSave;
+    private javax.swing.JMenuItem jmiSaveAs;
     private javax.swing.JMenuItem jmiSelectAll;
     private javax.swing.JMenuItem jmiSelectNone;
     private javax.swing.JScrollPane jspScrollFiles;
@@ -274,9 +324,14 @@ public class UdManFrame extends javax.swing.JFrame {
         DiskListModel dlm = new DiskListModel();
         dlm.setDisk(ud);
         jlsFiles.setModel(dlm);
+        updateStatus(ud);
+        
+    }
+    
+    private void updateStatus(UtilityDisk ud) {
         this.setTitle(TITLE_BASE+" - "+ud.getFileName());
         this.lStatus.setText(ud.getStatusInfo());
     }
     
-    private final String TITLE_BASE = "Backup T/D Utility Disk Manager";
+    private final String TITLE_BASE = "Backup T/D Utility Disk Manager 0.01";
 }

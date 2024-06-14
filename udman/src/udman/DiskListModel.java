@@ -26,6 +26,10 @@ public class DiskListModel extends AbstractListModel<FileProxy> {
         
         fireContentsChanged(this, firstIndex,lastIndex);
     }
+    
+    public UtilityDisk getDisk() {
+        return disk;
+    }
 
     @Override
     public int getSize() {

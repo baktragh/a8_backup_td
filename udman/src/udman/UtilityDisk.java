@@ -24,7 +24,11 @@ public class UtilityDisk {
     private int dummySectorCount;
     
     private final List<FileProxy> fileProxies;
-    private final String fileName;
+    private String fileSpec;
+    private String fileName;
+    
+    
+    
     
     public UtilityDisk(String filespec) throws IOException {
         
@@ -39,9 +43,14 @@ public class UtilityDisk {
             
         }
         
-        File f = new File(filespec);
-        this.fileName=f.getName();
+        setFilespec(filespec);
         
+    }
+    
+    final public void setFilespec(String filespec) {
+        this.fileSpec=filespec;
+        File f = new File(filespec);
+        fileName=f.getName();
     }
     
     private void readData(BufferedInputStream bis) throws IOException {
@@ -170,6 +179,7 @@ public class UtilityDisk {
     private void readATRHeader(BufferedInputStream bis) throws IOException {
         
         /*Read all 16 header bytes*/
+        atrHeaderData = new int[16];
         
         for (int i=0;i<atrHeaderData.length;i++) {
             atrHeaderData[i]=bis.read();
@@ -295,6 +305,10 @@ public class UtilityDisk {
     public String getFileName() {
         return fileName;
     }
+    
+    public String getFilespec() {
+        return fileSpec;
+    }
 
     String getStatusInfo() {
         return String.format("ID: %s Sectors: %d, Boot code: %d",idString, totalSectors,bootCodeData.length);
@@ -302,34 +316,85 @@ public class UtilityDisk {
     
     public void writeImage(String filespec) throws IOException {
         
-        FileOutputStream fos = new FileOutputStream(filespec);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        
-        int writtenSectors=0;
-        
-        /*Write the .ATR header*/
-        writeBytes(atrHeaderData,bos);
-        
-        /*Write boot code*/
-        writeBytes(bootCodeData,bos);
-        writtenSectors+=bootCodeData.length/128;
-        
-        /*Write filler data*/
-        for(int i=0;i<dummySectorCount;i++) {
-            writeEmptySector(bos);
+        try (FileOutputStream fos = new FileOutputStream(filespec); BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+            
+            int writtenSectors=0;
+            
+            /*Write the .ATR header*/
+            writeBytes(atrHeaderData,bos);
+            
+            /*Write boot code*/
+            writeBytes(bootCodeData,bos);
+            writtenSectors+=bootCodeData.length/128;
+            
+            /*Write filler data*/
+            for(int i=0;i<dummySectorCount;i++) {
+                writeEmptySector(bos);
+                writtenSectors++;
+            }
+            
+            /*Write identification*/
+            writeBytes(idSectorData,bos);
             writtenSectors++;
-        }
-        
-        /*Write identification*/
-        writeBytes(idSectorData,bos);
-        writtenSectors++;
-        
-        /*Write pristine indicators*/
-        writeBytes(pristineSectorData,bos);
-        writtenSectors++;
-        
-        /*Now write records of all files*/
-        for (FileProxy oneProxy:fileProxies) {
+            
+            /*Write pristine indicators*/
+            writeBytes(pristineSectorData,bos);
+            writtenSectors++;
+            
+            /*Now write records of all files*/
+            for (FileProxy oneProxy:fileProxies) {
+                
+                /*Make the header sector*/
+                int[] headerSector = makeEmptySectorData();
+                
+                headerSector[0]='H';
+                headerSector[1]=0x11;
+                headerSector[2]=0x00;
+                
+                headerSector[3]=oneProxy.getType();
+                for(int i=0;i<10;i++) {
+                    headerSector[4+i]=oneProxy.getNameChars()[i];
+                }
+                
+                headerSector[4+10+0]=oneProxy.getLoad()%256;
+                headerSector[4+10+1]=oneProxy.getLoad()/256;
+                headerSector[4+10+0]=oneProxy.getLength()%256;
+                headerSector[4+10+1]=oneProxy.getLength()/256;
+                headerSector[4+10+0]=oneProxy.getRun()%256;
+                headerSector[4+10+1]=oneProxy.getRun()/256;
+                
+                writeBytes(headerSector,bos);
+                writtenSectors++;
+                
+                /*Write the data*/
+                bos.write('D');
+                bos.write(oneProxy.getFileData().length%256);
+                bos.write(oneProxy.getFileData().length/256);
+                writeBytes(oneProxy.getFileData(),bos);
+                
+                /*Pad the last sector*/
+                int remainder = 128-((oneProxy.getFileData().length+3)%128);
+                for (int i=0;i<remainder;i++) {
+                    bos.write(0xFF);
+                }
+                
+                writtenSectors+=((oneProxy.getFileData().length+3)/128);
+                if (remainder!=0) writtenSectors++;
+                
+            }
+            
+            /*Now put the EOF indication*/
+            int[] eofSecData = makeEmptySectorData();
+            eofSecData[0]='E';
+            
+            writeBytes(eofSecData,bos);
+            writtenSectors++;
+            
+            /*Now pad the disk image to its rightful size*/
+            int emptySectors = totalSectors-writtenSectors;
+            for(int i=0;i<emptySectors;i++) {
+                writeEmptySector(bos);
+            }
             
         }
         

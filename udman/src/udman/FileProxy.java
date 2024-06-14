@@ -19,7 +19,7 @@ public class FileProxy {
         return String.format("%02X %10S %04X %04X %04X",type,sb.toString(),load,run,length);
     }
 
-    public FileProxy(int[] fileData, int type, int load, int run, int length, int[] nameChars) {
+    public FileProxy(int[] fileData, int type, int load, int length, int run, int[] nameChars) {
         this.fileData = fileData;
         this.type = type;
         this.load = load;
