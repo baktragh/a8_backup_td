@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.SwingUtilities;
 
 public class Udman {
@@ -11,19 +12,23 @@ public class Udman {
     private static UtilityDisk ud;
 
     public static void main(String[] args) throws Exception {
-        
-        ud=null;
-        
+    
+        /*Try opening utility disk passed in command line*/
         if (args.length>0) {
             try {
                 ud = new UtilityDisk(args[0]);
             }
             catch (IOException ioe) {
-                
+                InputStream is = Udman.class.getResourceAsStream("/udman/resources/ud_blank.atr");
+                UtilityDisk defaultUd=new UtilityDisk(is);
+                ud = defaultUd;
             }
         }
+        /*Otherwise open with default, blank disk*/
         else {
-            ud=null;
+            InputStream is = Udman.class.getResourceAsStream("/udman/resources/ud_blank.atr");
+            UtilityDisk defaultUd=new UtilityDisk(is);
+            ud=defaultUd;
         }
         
         UdManFrame f = new UdManFrame();

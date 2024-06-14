@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,15 +36,27 @@ public class UtilityDisk {
         fileProxies = new ArrayList<>();
         
         try (FileInputStream fis = new FileInputStream(filespec); BufferedInputStream bis = new BufferedInputStream(fis)) {
-            
-            readATRHeader(bis);
+           readFromStream(bis);
+           setFilespec(filespec);
+        }
+        
+    }
+    
+    public UtilityDisk(InputStream is) throws IOException {
+        
+        fileProxies = new ArrayList<>();
+        
+        try (BufferedInputStream bis = new BufferedInputStream(is)) {
+           readFromStream(bis);
+           setFilespec("");
+        }
+    }
+    
+    private void readFromStream(BufferedInputStream bis) throws IOException {
+         readATRHeader(bis);
             readCode(bis);
             readIdentification(bis);
             if (!isPristine) readData(bis);
-            
-        }
-        
-        setFilespec(filespec);
         
     }
     

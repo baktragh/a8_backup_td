@@ -7,6 +7,16 @@ import javax.swing.ListSelectionModel;
 public class DiskListModel extends AbstractListModel<FileProxy> {
     
     private UtilityDisk disk;
+
+    void delete(int[] selIndices) {
+        
+        int offset = 0;
+        for (int oneIndex:selIndices) {
+            disk.getProxies().remove(oneIndex-offset);
+            fireIntervalRemoved(this, oneIndex-offset, oneIndex-offset);
+            offset++;
+        }
+    }
     
     enum MoveDirection {
         UP,

@@ -12,6 +12,7 @@ public class UdManFrame extends javax.swing.JFrame {
      */
     public UdManFrame() {
         initComponents();
+        updateSelectionDependentControlsEnablement();
     }
 
     /**
@@ -32,8 +33,6 @@ public class UdManFrame extends javax.swing.JFrame {
         jmFile = new javax.swing.JMenu();
         jmiOpen = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jmiRename = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jmiSave = new javax.swing.JMenuItem();
         jmiSaveAs = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
@@ -41,6 +40,10 @@ public class UdManFrame extends javax.swing.JFrame {
         jmEdit = new javax.swing.JMenu();
         jmiSelectNone = new javax.swing.JMenuItem();
         jmiSelectAll = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jmiRename = new javax.swing.JMenuItem();
+        jmiDelete = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         jmiMoveUp = new javax.swing.JMenuItem();
         jmiMoveDown = new javax.swing.JMenuItem();
 
@@ -49,6 +52,11 @@ public class UdManFrame extends javax.swing.JFrame {
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
 
         jlsFiles.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
+        jlsFiles.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                onListSelectionChanged(evt);
+            }
+        });
         jspScrollFiles.setViewportView(jlsFiles);
 
         getContentPane().add(jspScrollFiles, java.awt.BorderLayout.CENTER);
@@ -74,17 +82,6 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmFile.add(jmiOpen);
         jmFile.add(jSeparator1);
-
-        jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        jmiRename.setMnemonic('R');
-        jmiRename.setText("Rename...");
-        jmiRename.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onRename(evt);
-            }
-        });
-        jmFile.add(jmiRename);
-        jmFile.add(jSeparator2);
 
         jmiSave.setMnemonic('S');
         jmiSave.setText("Save");
@@ -136,6 +133,26 @@ public class UdManFrame extends javax.swing.JFrame {
             }
         });
         jmEdit.add(jmiSelectAll);
+        jmEdit.add(jSeparator2);
+
+        jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiRename.setMnemonic('R');
+        jmiRename.setText("Rename...");
+        jmiRename.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onRename(evt);
+            }
+        });
+        jmEdit.add(jmiRename);
+
+        jmiDelete.setText("Delete...");
+        jmiDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onDelete(evt);
+            }
+        });
+        jmEdit.add(jmiDelete);
+        jmEdit.add(jSeparator4);
 
         jmiMoveUp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_UP, java.awt.event.InputEvent.ALT_DOWN_MASK));
         jmiMoveUp.setMnemonic('u');
@@ -243,6 +260,8 @@ public class UdManFrame extends javax.swing.JFrame {
         DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
         String filespec = dlm.getDisk().getFilespec();
         
+        if (filespec.isEmpty()) askForSpec=true;
+        
         if (askForSpec) {
             int result = fcOpen.showSaveDialog(this);
             if (result!=JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile()==null) return;
@@ -261,6 +280,22 @@ public class UdManFrame extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_onSave
+
+    private void onListSelectionChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onListSelectionChanged
+        updateSelectionDependentControlsEnablement();
+    }//GEN-LAST:event_onListSelectionChanged
+
+    private void onDelete(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onDelete
+        int[] selIndices = jlsFiles.getSelectedIndices();
+        if (selIndices.length<1) return;
+        
+        int r = JOptionPane.showConfirmDialog(this, "Do you want to delete the selected files?", "Confirm Deletion", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
+        if (r!=JOptionPane.YES_OPTION) return;
+        
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        dlm.delete(selIndices);
+        
+    }//GEN-LAST:event_onDelete
 
     /**
      * @param args the command line arguments
@@ -307,9 +342,11 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
+    private javax.swing.JMenuItem jmiDelete;
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiMoveDown;
     private javax.swing.JMenuItem jmiMoveUp;
@@ -335,6 +372,18 @@ public class UdManFrame extends javax.swing.JFrame {
     private void updateStatus(UtilityDisk ud) {
         this.setTitle(TITLE_BASE+" - "+ud.getFileName());
         this.lStatus.setText(ud.getStatusInfo());
+    }
+    
+    private void updateSelectionDependentControlsEnablement() {
+        
+        int[] indices = jlsFiles.getSelectedIndices();
+        
+        jmiRename.setEnabled(indices.length==1);
+        jmiMoveUp.setEnabled(indices.length>0);
+        jmiMoveDown.setEnabled(indices.length>0);
+        jmiDelete.setEnabled(indices.length>0);
+        
+        
     }
     
     private final String TITLE_BASE = "Backup T/D Utility Disk Manager 0.01";
