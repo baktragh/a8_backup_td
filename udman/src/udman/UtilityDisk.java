@@ -1,9 +1,11 @@
 package udman;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ public class UtilityDisk {
     
     private int totalSectors;
     
+    private int[] atrHeaderData;
     private int[] bootCodeData;
     private int[] idSectorData;
     private int[] pristineSectorData;
@@ -167,28 +170,28 @@ public class UtilityDisk {
     private void readATRHeader(BufferedInputStream bis) throws IOException {
         
         /*Read all 16 header bytes*/
-        int[] headerBytes = new int[16];
-        for (int i=0;i<headerBytes.length;i++) {
-            headerBytes[i]=bis.read();
-            if (headerBytes[i]==-1) {
+        
+        for (int i=0;i<atrHeaderData.length;i++) {
+            atrHeaderData[i]=bis.read();
+            if (atrHeaderData[i]==-1) {
                 throw new IOException("EOF Reached prematurely. The file is not a valid ATR disk image");
             }
         }
         
         /*Check the ATR header*/
-        if (headerBytes[0]!=0x96 && headerBytes[1]!=0x02) {
+        if (atrHeaderData[0]!=0x96 && atrHeaderData[1]!=0x02) {
             throw new IOException("Invalid identification bytes. The file is not a valid ATR disk image.");
         }
         
         /*Check how big the sector is. It must be 128 bytes*/
-        int sectorSize = headerBytes[4]+256*headerBytes[5];
+        int sectorSize = atrHeaderData[4]+256*atrHeaderData[5];
         if (sectorSize!=128) {
             throw new IOException("Invalid sector size. The disk image is not a BACKUP T/D utility disk.");
         }
         
         /*Check how many sectors we have*/
-        int sizeWordHi = headerBytes[6]+256*headerBytes[7];
-        int sizeWordLo = headerBytes[2]+256*headerBytes[3];
+        int sizeWordHi = atrHeaderData[6]+256*atrHeaderData[7];
+        int sizeWordLo = atrHeaderData[2]+256*atrHeaderData[3];
         
         int sizeInBytes = (sizeWordHi*65536+sizeWordLo)*16;
         totalSectors = sizeInBytes/sectorSize;
@@ -261,8 +264,6 @@ public class UtilityDisk {
         return sectorBytes;
 
     }
-    
-    
     private static int[] getAsIntArray(byte[] byteArray, int numBytes) {
 
         int[] intArray = new int[numBytes];
@@ -294,7 +295,67 @@ public class UtilityDisk {
     public String getFileName() {
         return fileName;
     }
+
+    String getStatusInfo() {
+        return String.format("ID: %s Sectors: %d, Boot code: %d",idString, totalSectors,bootCodeData.length);
+    }
     
+    public void writeImage(String filespec) throws IOException {
+        
+        FileOutputStream fos = new FileOutputStream(filespec);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        
+        int writtenSectors=0;
+        
+        /*Write the .ATR header*/
+        writeBytes(atrHeaderData,bos);
+        
+        /*Write boot code*/
+        writeBytes(bootCodeData,bos);
+        writtenSectors+=bootCodeData.length/128;
+        
+        /*Write filler data*/
+        for(int i=0;i<dummySectorCount;i++) {
+            writeEmptySector(bos);
+            writtenSectors++;
+        }
+        
+        /*Write identification*/
+        writeBytes(idSectorData,bos);
+        writtenSectors++;
+        
+        /*Write pristine indicators*/
+        writeBytes(pristineSectorData,bos);
+        writtenSectors++;
+        
+        /*Now write records of all files*/
+        for (FileProxy oneProxy:fileProxies) {
+            
+        }
+        
+        
+    }
+    
+    private void writeBytes(int[] bytes,BufferedOutputStream bos) throws IOException {
+        for (int oneByte:bytes) {
+            bos.write(oneByte);
+        }
+    }
+    
+    private void writeEmptySector(BufferedOutputStream bos) throws IOException {
+        for (int i=0;i<128;i++) {
+            bos.write(0);
+        }
+    }
+    
+    private int[] makeEmptySectorData() {
+        int[] emptyData = new int[128];
+        for(int i=0;i<emptyData.length;i++) {
+            emptyData[i]=0xFF;
+        }
+        return emptyData;
+    }
+
     
     
 }

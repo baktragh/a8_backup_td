@@ -26,26 +26,40 @@ public class UdManFrame extends javax.swing.JFrame {
         fcOpen = new javax.swing.JFileChooser();
         jspScrollFiles = new javax.swing.JScrollPane();
         jlsFiles = new javax.swing.JList<>();
+        pStatus = new javax.swing.JPanel();
+        lStatus = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jmiFile = new javax.swing.JMenu();
+        jmFile = new javax.swing.JMenu();
         jmiOpen = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         jmiRename = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
+        jmEdit = new javax.swing.JMenu();
+        jmiSelectNone = new javax.swing.JMenuItem();
+        jmiSelectAll = new javax.swing.JMenuItem();
+        jmiMoveUp = new javax.swing.JMenuItem();
+        jmiMoveDown = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(TITLE_BASE);
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
 
         jlsFiles.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
-        jlsFiles.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jspScrollFiles.setViewportView(jlsFiles);
 
         getContentPane().add(jspScrollFiles, java.awt.BorderLayout.CENTER);
 
-        jmiFile.setMnemonic('F');
-        jmiFile.setText("File");
+        pStatus.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 4));
+
+        lStatus.setFont(lStatus.getFont().deriveFont((lStatus.getFont().getStyle() & ~java.awt.Font.ITALIC) & ~java.awt.Font.BOLD, lStatus.getFont().getSize()-1));
+        lStatus.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        pStatus.add(lStatus);
+
+        getContentPane().add(pStatus, java.awt.BorderLayout.SOUTH);
+
+        jmFile.setMnemonic('F');
+        jmFile.setText("File");
 
         jmiOpen.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jmiOpen.setMnemonic('O');
@@ -55,8 +69,8 @@ public class UdManFrame extends javax.swing.JFrame {
                 onOpenDiskImage(evt);
             }
         });
-        jmiFile.add(jmiOpen);
-        jmiFile.add(jSeparator1);
+        jmFile.add(jmiOpen);
+        jmFile.add(jSeparator1);
 
         jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jmiRename.setMnemonic('R');
@@ -66,14 +80,63 @@ public class UdManFrame extends javax.swing.JFrame {
                 onRename(evt);
             }
         });
-        jmiFile.add(jmiRename);
-        jmiFile.add(jSeparator2);
+        jmFile.add(jmiRename);
+        jmFile.add(jSeparator2);
 
         jmiExit.setMnemonic('x');
         jmiExit.setText("Exit");
-        jmiFile.add(jmiExit);
+        jmiExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onExit(evt);
+            }
+        });
+        jmFile.add(jmiExit);
 
-        jMenuBar1.add(jmiFile);
+        jMenuBar1.add(jmFile);
+
+        jmEdit.setMnemonic('E');
+        jmEdit.setText("Edit");
+
+        jmiSelectNone.setMnemonic('n');
+        jmiSelectNone.setText("Select none");
+        jmiSelectNone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onSelectNone(evt);
+            }
+        });
+        jmEdit.add(jmiSelectNone);
+
+        jmiSelectAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiSelectAll.setMnemonic('a');
+        jmiSelectAll.setText("Select all");
+        jmiSelectAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onSelectAll(evt);
+            }
+        });
+        jmEdit.add(jmiSelectAll);
+
+        jmiMoveUp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_UP, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        jmiMoveUp.setMnemonic('u');
+        jmiMoveUp.setText("Move up");
+        jmiMoveUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onMoveItem(evt);
+            }
+        });
+        jmEdit.add(jmiMoveUp);
+
+        jmiMoveDown.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DOWN, java.awt.event.InputEvent.ALT_DOWN_MASK));
+        jmiMoveDown.setMnemonic('d');
+        jmiMoveDown.setText("Move down");
+        jmiMoveDown.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onMoveItem(evt);
+            }
+        });
+        jmEdit.add(jmiMoveDown);
+
+        jMenuBar1.add(jmEdit);
 
         setJMenuBar(jMenuBar1);
 
@@ -122,9 +185,31 @@ public class UdManFrame extends javax.swing.JFrame {
             dlm.itemUpdate(fp);
         }
         
-        
-        
     }//GEN-LAST:event_onRename
+
+    private void onSelectNone(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSelectNone
+        jlsFiles.getSelectionModel().clearSelection();
+    }//GEN-LAST:event_onSelectNone
+
+    private void onSelectAll(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSelectAll
+        
+        int size = jlsFiles.getModel().getSize();
+        if (size==0) return;
+        jlsFiles.getSelectionModel().setSelectionInterval(0,size-1);
+    }//GEN-LAST:event_onSelectAll
+
+    private void onMoveItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onMoveItem
+        
+        DiskListModel.MoveDirection direction = evt.getSource()==jmiMoveUp?DiskListModel.MoveDirection.UP:DiskListModel.MoveDirection.DOWN;
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        dlm.moveElements(jlsFiles.getSelectedIndices(), direction, jlsFiles.getSelectionModel());
+        
+    }//GEN-LAST:event_onMoveItem
+
+    private void onExit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExit
+        setVisible(false);
+        dispose();
+    }//GEN-LAST:event_onExit
 
     /**
      * @param args the command line arguments
@@ -171,11 +256,18 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JList<FileProxy> jlsFiles;
+    private javax.swing.JMenu jmEdit;
+    private javax.swing.JMenu jmFile;
     private javax.swing.JMenuItem jmiExit;
-    private javax.swing.JMenu jmiFile;
+    private javax.swing.JMenuItem jmiMoveDown;
+    private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
     private javax.swing.JMenuItem jmiRename;
+    private javax.swing.JMenuItem jmiSelectAll;
+    private javax.swing.JMenuItem jmiSelectNone;
     private javax.swing.JScrollPane jspScrollFiles;
+    private javax.swing.JLabel lStatus;
+    private javax.swing.JPanel pStatus;
     // End of variables declaration//GEN-END:variables
 
     void setDisk(UtilityDisk ud) {
@@ -183,6 +275,7 @@ public class UdManFrame extends javax.swing.JFrame {
         dlm.setDisk(ud);
         jlsFiles.setModel(dlm);
         this.setTitle(TITLE_BASE+" - "+ud.getFileName());
+        this.lStatus.setText(ud.getStatusInfo());
     }
     
     private final String TITLE_BASE = "Backup T/D Utility Disk Manager";

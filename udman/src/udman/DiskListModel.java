@@ -1,10 +1,17 @@
 package udman;
 
+import java.util.ArrayList;
 import javax.swing.AbstractListModel;
+import javax.swing.ListSelectionModel;
 
 public class DiskListModel extends AbstractListModel<FileProxy> {
     
     private UtilityDisk disk;
+    
+    enum MoveDirection {
+        UP,
+        DOWN
+    }
     
     public DiskListModel() {
         disk=null;
@@ -46,6 +53,86 @@ public class DiskListModel extends AbstractListModel<FileProxy> {
         if (index!=-1) {
             fireContentsChanged(this, index, index);
         }
+    }
+    
+    boolean moveElements(int[] indexes,MoveDirection direction,ListSelectionModel selModel) {
+        
+        boolean movable=true;
+        int prevIndex=-1;
+        
+        ArrayList<Integer> selIndexes = new ArrayList<>();
+        
+        int mainDiff;
+        int oldItemDiff;
+        int startItem;
+        int endItem;
+        int stuckIndex;
+        
+        if (direction==MoveDirection.UP) {
+            mainDiff=+1;
+            oldItemDiff=-1;
+            startItem=0;
+            endItem=indexes.length;
+            stuckIndex=0;
+        }
+        else {
+            mainDiff=-1;
+            oldItemDiff=+1;
+            startItem=indexes.length-1;
+            endItem=-1;
+            stuckIndex=disk.getProxies().size()-1;
+        }
+        
+        for (int z=startItem;z!=endItem;z+=mainDiff) {
+            
+            int currIndex = indexes[z];
+            
+            /*If zeroth index, then not movable and we are done*/
+            if (currIndex==stuckIndex) {
+                movable=false;
+                prevIndex=currIndex;
+                selIndexes.add(currIndex);
+                continue;
+            }
+            
+            /*If previous item was not movable and we are previous+1, item is not movable either*/
+            if (prevIndex==currIndex+oldItemDiff && movable==false) {
+                prevIndex=currIndex;
+                selIndexes.add(currIndex);
+                continue;
+            }
+            
+            movable=true;
+            
+            /*Get references to the items*/
+            FileProxy oldItem = disk.getProxies().get(currIndex+oldItemDiff);
+            FileProxy currentItem = disk.getProxies().get(currIndex);
+            
+            /*Swap*/
+            disk.getProxies().set(currIndex, oldItem);
+            disk.getProxies().set(currIndex+oldItemDiff,currentItem);
+            selIndexes.add(currIndex+oldItemDiff);
+            
+            /*Update prev index*/
+            prevIndex=currIndex;
+            
+        }
+        
+        if (movable==false) return movable;
+        
+        for (int selIndex:selIndexes) {
+            fireContentsChanged(this,selIndex, selIndex+mainDiff);
+        }
+        
+        selModel.clearSelection();
+        
+        for (int selindex:selIndexes) {
+            selModel.addSelectionInterval(selindex, selindex);
+        }
+        
+        return movable;
+        
+        
     }
 
 }

@@ -25,17 +25,22 @@ public class Udman {
         else {
             ud=null;
         }
+        
+        UdManFrame f = new UdManFrame();
 
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                UdManFrame f = new UdManFrame();
+                
                 if (ud!=null) f.setDisk(ud);
                 f.pack();
                 centerContainer(f);
                 f.setVisible(true);
+                
             }
         });
+        
+        
 
     }
     
