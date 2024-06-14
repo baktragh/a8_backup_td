@@ -221,6 +221,8 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onMoveItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onMoveItem
         
+        if (jlsFiles.getSelectedIndex()==-1) return;
+        
         DiskListModel.MoveDirection direction = evt.getSource()==jmiMoveUp?DiskListModel.MoveDirection.UP:DiskListModel.MoveDirection.DOWN;
         DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
         dlm.moveElements(jlsFiles.getSelectedIndices(), direction, jlsFiles.getSelectionModel());
@@ -235,6 +237,8 @@ public class UdManFrame extends javax.swing.JFrame {
     private void onSave(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSave
         boolean askForSpec = false;
         if (evt.getSource()==jmiSaveAs) askForSpec=true;
+        
+        if (!(jlsFiles.getModel() instanceof DiskListModel)) return;
         
         DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
         String filespec = dlm.getDisk().getFilespec();

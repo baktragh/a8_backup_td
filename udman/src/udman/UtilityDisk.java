@@ -358,10 +358,10 @@ public class UtilityDisk {
                 
                 headerSector[4+10+0]=oneProxy.getLoad()%256;
                 headerSector[4+10+1]=oneProxy.getLoad()/256;
-                headerSector[4+10+0]=oneProxy.getLength()%256;
-                headerSector[4+10+1]=oneProxy.getLength()/256;
-                headerSector[4+10+0]=oneProxy.getRun()%256;
-                headerSector[4+10+1]=oneProxy.getRun()/256;
+                headerSector[4+10+2]=oneProxy.getLength()%256;
+                headerSector[4+10+3]=oneProxy.getLength()/256;
+                headerSector[4+10+4]=oneProxy.getRun()%256;
+                headerSector[4+10+5]=oneProxy.getRun()/256;
                 
                 writeBytes(headerSector,bos);
                 writtenSectors++;
