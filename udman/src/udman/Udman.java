@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 public class Udman {
     
     private static UtilityDisk ud;
+    
 
     public static void main(String[] args) throws Exception {
     
@@ -31,6 +32,8 @@ public class Udman {
             ud=defaultUd;
         }
         
+        UIPersistence.getInstance().load();
+        
         UdManFrame f = new UdManFrame();
 
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -41,11 +44,9 @@ public class Udman {
                 f.pack();
                 centerContainer(f);
                 f.setVisible(true);
-                
             }
         });
-        
-        
+
 
     }
     

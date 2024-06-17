@@ -2,6 +2,7 @@ package udman;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -36,6 +37,8 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiSave = new javax.swing.JMenuItem();
         jmiSaveAs = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        jmiExtract = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
         jmEdit = new javax.swing.JMenu();
         jmiSelectNone = new javax.swing.JMenuItem();
@@ -49,6 +52,14 @@ public class UdManFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(TITLE_BASE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                onClosing(evt);
+            }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                onWindowOpened(evt);
+            }
+        });
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
 
         jlsFiles.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
@@ -100,6 +111,17 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmFile.add(jmiSaveAs);
         jmFile.add(jSeparator3);
+
+        jmiExtract.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiExtract.setMnemonic('E');
+        jmiExtract.setText("Extract files...");
+        jmiExtract.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onExtract(evt);
+            }
+        });
+        jmFile.add(jmiExtract);
+        jmFile.add(jSeparator5);
 
         jmiExit.setMnemonic('x');
         jmiExit.setText("Exit");
@@ -297,6 +319,35 @@ public class UdManFrame extends javax.swing.JFrame {
         
     }//GEN-LAST:event_onDelete
 
+    private void onExtract(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExtract
+        int[] selIndices = jlsFiles.getSelectedIndices();
+        if (selIndices.length<1) return;
+        
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        
+        ArrayList<FileProxy> proxies = new ArrayList<>();
+        for(int i=0;i<selIndices.length;i++) {
+            proxies.add(dlm.getElementAt(selIndices[i]));
+        }
+        
+        ExtractDialog ed = new ExtractDialog(this,proxies);
+        ed.pack();
+        Udman.centerContainer(ed);
+        ed.setVisible(true);
+        
+        
+    }//GEN-LAST:event_onExtract
+
+    private void onClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosing
+        File f = fcOpen.getCurrentDirectory();
+        if (f!=null) UIPersistence.getInstance().diskFolder=f.getAbsolutePath();
+        UIPersistence.getInstance().save();
+    }//GEN-LAST:event_onClosing
+
+    private void onWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onWindowOpened
+        fcOpen.setCurrentDirectory(new File(UIPersistence.getInstance().diskFolder));
+    }//GEN-LAST:event_onWindowOpened
+
     /**
      * @param args the command line arguments
      */
@@ -343,11 +394,13 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
     private javax.swing.JMenuItem jmiDelete;
     private javax.swing.JMenuItem jmiExit;
+    private javax.swing.JMenuItem jmiExtract;
     private javax.swing.JMenuItem jmiMoveDown;
     private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
@@ -382,9 +435,9 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiMoveUp.setEnabled(indices.length>0);
         jmiMoveDown.setEnabled(indices.length>0);
         jmiDelete.setEnabled(indices.length>0);
-        
+        jmiExtract.setEnabled(indices.length>0);
         
     }
     
-    private final String TITLE_BASE = "Backup T/D Utility Disk Manager 0.01";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.02";
 }
