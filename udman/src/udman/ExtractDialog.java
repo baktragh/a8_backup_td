@@ -135,7 +135,6 @@ public class ExtractDialog extends javax.swing.JDialog {
 
         jcbTapeImages.setMnemonic('t');
         jcbTapeImages.setText("Extract tape images");
-        jcbTapeImages.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

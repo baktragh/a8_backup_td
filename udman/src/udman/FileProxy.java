@@ -16,7 +16,7 @@ public class FileProxy {
         for(int oneChar:nameChars) {
             sb.append((char)oneChar);
         }
-        return String.format("%02X %10S %04X %04X %04X",type,sb.toString(),load,run,length);
+        return String.format("%02X %10s %04X %04X %04X",type,sb.toString(),load,run,length);
     }
 
     public FileProxy(int[] fileData, int type, int load, int length, int run, int[] nameChars) {
