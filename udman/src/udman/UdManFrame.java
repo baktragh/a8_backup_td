@@ -39,6 +39,8 @@ public class UdManFrame extends javax.swing.JFrame {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jmiExtract = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        jmiImport = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
         jmEdit = new javax.swing.JMenu();
         jmiSelectNone = new javax.swing.JMenuItem();
@@ -122,6 +124,18 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmFile.add(jmiExtract);
         jmFile.add(jSeparator5);
+
+        jmiImport.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiImport.setMnemonic('I');
+        jmiImport.setText("Import monolithic binaries...");
+        jmiImport.setToolTipText("");
+        jmiImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onImport(evt);
+            }
+        });
+        jmFile.add(jmiImport);
+        jmFile.add(jSeparator6);
 
         jmiExit.setMnemonic('x');
         jmiExit.setText("Exit");
@@ -341,12 +355,87 @@ public class UdManFrame extends javax.swing.JFrame {
     private void onClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosing
         File f = fcOpen.getCurrentDirectory();
         if (f!=null) UIPersistence.getInstance().diskFolder=f.getAbsolutePath();
+        if (fcImport!=null && fcImport.getCurrentDirectory()!=null) {
+            UIPersistence.getInstance().importFolder=fcImport.getCurrentDirectory().getAbsolutePath();
+        }
+        
         UIPersistence.getInstance().save();
     }//GEN-LAST:event_onClosing
 
     private void onWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onWindowOpened
         fcOpen.setCurrentDirectory(new File(UIPersistence.getInstance().diskFolder));
     }//GEN-LAST:event_onWindowOpened
+
+    private void onImport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onImport
+       
+        JFileChooser fc = getImportChooser();
+        int result = fc.showOpenDialog(this);
+        
+        if (result!=JFileChooser.APPROVE_OPTION || fc.getSelectedFiles().length==0) return;
+        
+        int goodCount=0;
+        int totalCount=0;
+        int badCount=0;
+        
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        
+        ArrayList<FileProxy> proxies = new ArrayList<>();
+        ArrayList<String> failedFiles = new ArrayList<>();
+        
+        for(File oneFile:fc.getSelectedFiles()) {
+            
+            try {
+                totalCount++;
+                FileProxy oneProxy = dlm.getDisk().importMonolithicBinary(oneFile.getAbsolutePath());
+                proxies.add(oneProxy);
+                goodCount++;
+                
+            }
+            catch (Exception e) {
+                badCount++;
+                String eMsg = e.getMessage();
+                if (eMsg==null) {
+                    eMsg="";
+                }
+                else {
+                    eMsg=": "+eMsg;
+                }
+                
+                failedFiles.add(oneFile.getName()+eMsg);
+                
+            }
+            
+        }
+        
+        dlm.addProxies(proxies);
+        
+        /*Report*/
+        StringBuilder sb = new StringBuilder();
+        sb.append("<HTML>");
+        String message = String.format("Total files: %d, imported: %d, failed: %d",totalCount,goodCount,badCount);
+        sb.append(message);
+        
+        /*If some failed files*/
+        if (!failedFiles.isEmpty()) {
+            sb.append("<BR><BR>");
+            sb.append("Failed files:<BR>");
+            
+            int itemCount = Math.min(12,failedFiles.size());
+            
+            for(int i=0;i<itemCount;i++) {
+                sb.append(failedFiles.get(i));
+                sb.append("<BR>");
+            }
+            
+            if (itemCount!=failedFiles.size()) {
+                sb.append("...<BR>");
+            }
+        }
+        
+        sb.append("</HTML>");
+        JOptionPane.showMessageDialog(this, sb.toString(), "Import results", JOptionPane.INFORMATION_MESSAGE);
+        
+    }//GEN-LAST:event_onImport
 
     /**
      * @param args the command line arguments
@@ -395,12 +484,14 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
     private javax.swing.JMenuItem jmiDelete;
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiExtract;
+    private javax.swing.JMenuItem jmiImport;
     private javax.swing.JMenuItem jmiMoveDown;
     private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
@@ -423,7 +514,9 @@ public class UdManFrame extends javax.swing.JFrame {
     }
     
     private void updateStatus(UtilityDisk ud) {
-        this.setTitle(TITLE_BASE+" - "+ud.getFileName());
+        
+        String titleDisk = ud.getFileName().isEmpty()?"New disk":ud.getFileName();
+        this.setTitle(TITLE_BASE+" - "+titleDisk);
         this.lStatus.setText(ud.getStatusInfo());
     }
     
@@ -439,5 +532,18 @@ public class UdManFrame extends javax.swing.JFrame {
         
     }
     
-    private final String TITLE_BASE = "Backup T/D UDMan 0.03";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.04";
+    
+    private JFileChooser fcImport=null;
+    private JFileChooser getImportChooser() {
+        if (fcImport!=null) return fcImport;
+        fcImport = new JFileChooser();
+        fcImport.setDialogTitle("Import monolithic binary files");
+        fcImport.setDialogType(JFileChooser.OPEN_DIALOG);
+        fcImport.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fcImport.setCurrentDirectory(new File(UIPersistence.getInstance().importFolder));
+        fcImport.setMultiSelectionEnabled(true);
+        return fcImport;
+    }
+    
 }

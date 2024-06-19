@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import udman.dtb.DOS2Binary;
+import udman.dtb.DOS2BinaryProcessingException;
 
 public class UtilityDisk {
     
@@ -27,9 +29,6 @@ public class UtilityDisk {
     private final List<FileProxy> fileProxies;
     private String fileSpec;
     private String fileName;
-    
-    
-    
     
     public UtilityDisk(String filespec) throws IOException {
         
@@ -329,29 +328,39 @@ public class UtilityDisk {
     
     public void writeImage(String filespec) throws IOException {
         
-        try (FileOutputStream fos = new FileOutputStream(filespec); BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+        byte[] diskImageData;
+        
+        try (  ByteArrayOutputStream tempBaos = new ByteArrayOutputStream();
+                BufferedOutputStream tempBos= new BufferedOutputStream(tempBaos) ) {
             
             int writtenSectors=0;
             
             /*Write the .ATR header*/
-            writeBytes(atrHeaderData,bos);
+            writeBytes(atrHeaderData,tempBos);
             
             /*Write boot code*/
-            writeBytes(bootCodeData,bos);
+            writeBytes(bootCodeData,tempBos);
             writtenSectors+=bootCodeData.length/128;
             
             /*Write filler data*/
             for(int i=0;i<dummySectorCount;i++) {
-                writeEmptySector(bos);
+                writeEmptySector(tempBos);
                 writtenSectors++;
             }
             
             /*Write identification*/
-            writeBytes(idSectorData,bos);
+            writeBytes(idSectorData,tempBos);
             writtenSectors++;
             
-            /*Write pristine indicators*/
-            writeBytes(pristineSectorData,bos);
+            /*Check pristine indicators. If we have data, we must
+              change the pristine sector indicators to indicate so*/
+            if (pristineSectorData[0]==0x55 && !fileProxies.isEmpty()) {
+                for(int i=0;i<pristineSectorData.length;i++) {
+                    pristineSectorData[i]=0xC0;
+                }
+            }
+            
+            writeBytes(pristineSectorData,tempBos);
             writtenSectors++;
             
             /*Now write records of all files*/
@@ -376,19 +385,19 @@ public class UtilityDisk {
                 headerSector[4+10+4]=oneProxy.getRun()%256;
                 headerSector[4+10+5]=oneProxy.getRun()/256;
                 
-                writeBytes(headerSector,bos);
+                writeBytes(headerSector,tempBos);
                 writtenSectors++;
                 
                 /*Write the data*/
-                bos.write('D');
-                bos.write(oneProxy.getFileData().length%256);
-                bos.write(oneProxy.getFileData().length/256);
-                writeBytes(oneProxy.getFileData(),bos);
+                tempBos.write('D');
+                tempBos.write(oneProxy.getFileData().length%256);
+                tempBos.write(oneProxy.getFileData().length/256);
+                writeBytes(oneProxy.getFileData(),tempBos);
                 
                 /*Pad the last sector*/
                 int remainder = 128-((oneProxy.getFileData().length+3)%128);
                 for (int i=0;i<remainder;i++) {
-                    bos.write(0xFF);
+                    tempBos.write(0xFF);
                 }
                 
                 writtenSectors+=((oneProxy.getFileData().length+3)/128);
@@ -400,18 +409,37 @@ public class UtilityDisk {
             int[] eofSecData = makeEmptySectorData();
             eofSecData[0]='E';
             
-            writeBytes(eofSecData,bos);
+            writeBytes(eofSecData,tempBos);
             writtenSectors++;
             
             /*Now pad the disk image to its rightful size*/
             int emptySectors = totalSectors-writtenSectors;
-            for(int i=0;i<emptySectors;i++) {
-                writeEmptySector(bos);
+            
+            if (emptySectors<0) {
+                throw new IOException("Disk image size exceeded");
             }
             
+            for(int i=0;i<emptySectors;i++) {
+                writeEmptySector(tempBos);
+            }
+            
+            tempBos.flush();
+            diskImageData=tempBaos.toByteArray();
+            
+        }
+        catch (IOException ioe) {
+            throw ioe;
         }
         
-        
+        /*Once we are sure the disk image is valid, write it to file*/
+        try (FileOutputStream fos = new FileOutputStream(filespec);
+                BufferedOutputStream fileBos = new BufferedOutputStream(fos)) {
+            
+            fileBos.write(diskImageData);
+            fileBos.flush();
+
+        }
+
     }
     
     private void writeBytes(int[] bytes,BufferedOutputStream bos) throws IOException {
@@ -432,6 +460,42 @@ public class UtilityDisk {
             emptyData[i]=0xFF;
         }
         return emptyData;
+    }
+    
+    public FileProxy importMonolithicBinary(String filespec) throws Exception {
+        
+        DOS2Binary dtb = new DOS2Binary(filespec);
+        dtb.analyzeFromFile();
+        
+        if (!dtb.isMonolithic()) {
+            throw new DOS2BinaryProcessingException("The binary file is not monolithic");
+        }
+        
+        DOS2Binary.MonolithicConversionInfoCrate convInfo = dtb.getMonolithicBinaryFileConversionInfo();
+        
+        
+        int[] nameChars = new int[10];
+        for(int i=0;i<nameChars.length;i++) nameChars[i]=0x20;
+        
+        File f = new File(filespec);
+        String name = f.getName();
+        name=name.substring(0,Math.min(name.length(),10)).toUpperCase();
+        
+        for(int i=0;i<name.length();i++) {
+            nameChars[i]=name.charAt(i);
+        }
+        
+        FileProxy newProxy = new FileProxy(
+                convInfo.data,
+                0x03,
+                convInfo.loadAddress,
+                convInfo.data.length,
+                convInfo.runAddress,
+                nameChars
+        );
+        
+        return newProxy;
+        
     }
 
     

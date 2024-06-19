@@ -15,6 +15,7 @@ public class UIPersistence implements Serializable {
     boolean extractForceBinaries;
     boolean extractSequentialNaming;
     boolean extractLongNames;
+    String importFolder;
     
     private UIPersistence() {
         
@@ -25,6 +26,7 @@ public class UIPersistence implements Serializable {
         extractForceBinaries=false;
         extractSequentialNaming=false;
         extractLongNames=true;
+        importFolder="";
         
     }
     

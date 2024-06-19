@@ -17,6 +17,13 @@ public class DiskListModel extends AbstractListModel<FileProxy> {
             offset++;
         }
     }
+
+    void addProxies(ArrayList<FileProxy> proxies) {
+        disk.getProxies().addAll(proxies);
+        for(FileProxy oneProxy:disk.getProxies()) {
+            itemUpdate(oneProxy);
+        }
+    }
     
     enum MoveDirection {
         UP,
