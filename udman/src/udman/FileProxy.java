@@ -72,6 +72,22 @@ public class FileProxy {
         return fileData;
     }
     
+    public int[] getHeaderData() {
+         int[] headerData = new int[17];
+            headerData[0] = getType();
+            for (int i = 0; i < 10; i++) {
+                headerData[1 + i] = getNameChars()[i];
+            }
+            headerData[11 + 0] = getLoad() % 256;
+            headerData[11 + 1] = getLoad() / 256;
+            headerData[11 + 2] = getLength() % 256;
+            headerData[11 + 3] = getLength() / 256;
+            headerData[11 + 4] = getRun() % 256;
+            headerData[11 + 5] = getRun() / 256;
+            
+            return headerData;
+    }
+    
     
     
    

@@ -3,6 +3,7 @@ package udman;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -40,6 +41,8 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiExtract = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         jmiImport = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        jmiDisplayStats = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         jmiExit = new javax.swing.JMenuItem();
         jmEdit = new javax.swing.JMenu();
@@ -128,13 +131,23 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiImport.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jmiImport.setMnemonic('I');
         jmiImport.setText("Import monolithic binaries...");
-        jmiImport.setToolTipText("");
         jmiImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onImport(evt);
             }
         });
         jmFile.add(jmiImport);
+        jmFile.add(jSeparator7);
+
+        jmiDisplayStats.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiDisplayStats.setMnemonic('D');
+        jmiDisplayStats.setText("Display statistics...");
+        jmiDisplayStats.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onStats(evt);
+            }
+        });
+        jmFile.add(jmiDisplayStats);
         jmFile.add(jSeparator6);
 
         jmiExit.setMnemonic('x');
@@ -437,6 +450,31 @@ public class UdManFrame extends javax.swing.JFrame {
         
     }//GEN-LAST:event_onImport
 
+    private void onStats(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onStats
+        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        List<FileProxy> proxies = dlm.getDisk().getProxies();
+        
+        Extractor.DiskInfo di = Extractor.getDiskInfo(proxies);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("<HTML>");
+        sb.append(String.format("Number of files: %d",proxies.size()));
+        sb.append("<BR>");
+        sb.append(String.format("Total size of files: %d KB",di.numBytes/1024));
+        sb.append("<BR><BR>Estimated recoding durations:<BR>");
+        sb.append(String.format("Short gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesShort, 44100)));
+        sb.append("<BR>");
+        sb.append(String.format("Medium gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesMedium, 44100)));
+        sb.append("<BR>");
+        sb.append(String.format("Long gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesLong, 44100)));
+        sb.append("<BR>");
+        sb.append("</HTML>");
+        
+        JOptionPane.showMessageDialog(this, sb.toString(), "Statistics", JOptionPane.INFORMATION_MESSAGE);
+        
+        
+    }//GEN-LAST:event_onStats
+
     /**
      * @param args the command line arguments
      */
@@ -485,10 +523,12 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JList<FileProxy> jlsFiles;
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
     private javax.swing.JMenuItem jmiDelete;
+    private javax.swing.JMenuItem jmiDisplayStats;
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiExtract;
     private javax.swing.JMenuItem jmiImport;
@@ -510,7 +550,6 @@ public class UdManFrame extends javax.swing.JFrame {
         dlm.setDisk(ud);
         jlsFiles.setModel(dlm);
         updateStatus(ud);
-        
     }
     
     private void updateStatus(UtilityDisk ud) {

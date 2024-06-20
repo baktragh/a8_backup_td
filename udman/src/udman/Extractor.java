@@ -3,6 +3,7 @@ package udman;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Extractor {
 
@@ -216,27 +217,20 @@ public class Extractor {
                 bos.write(oneByte);
             }
 
-            /*Construct the header block*/
-            int[] headerData = new int[19];
-            headerData[0] = 0x00;
-            headerData[1] = oneProxy.getType();
-            for (int i = 0; i < 10; i++) {
-                headerData[2 + i] = oneProxy.getNameChars()[i];
-            }
-            headerData[12 + 0] = oneProxy.getLoad() % 256;
-            headerData[12 + 1] = oneProxy.getLoad() / 256;
-            headerData[12 + 2] = oneProxy.getLength() % 256;
-            headerData[12 + 3] = oneProxy.getLength() / 256;
-            headerData[12 + 4] = oneProxy.getRun() % 256;
-            headerData[12 + 5] = oneProxy.getRun() / 256;
-            int chsum = headerData[0];
+            /*Construct the header block full data, including id byte and checksum*/
+            int[] headerFullData = new int[19];
+            
+            headerFullData[0] = 0x00;
+            System.arraycopy(oneProxy.getHeaderData(),0,headerFullData,1,oneProxy.getHeaderData().length);
+            
+            int chsum = headerFullData[0];
             for (int i = 0; i < 17; i++) {
-                chsum = chsum ^ headerData[1 + i];
+                chsum = chsum ^ headerFullData[1 + i];
             }
-            headerData[12 + 6] = chsum;
+            headerFullData[12 + 6] = chsum;
 
             /*Write the header block data*/
-            for (int oneByte : headerData) {
+            for (int oneByte : headerFullData) {
                 bos.write(oneByte);
             }
 
@@ -284,6 +278,117 @@ public class Extractor {
         }
 
     }
+    
+    public static DiskInfo getDiskInfo(List<FileProxy> proxies) {
+        
+        DiskInfo di = new DiskInfo();
+        
+        final int SAMPLES_ONE = 26;
+        final int SAMPLES_ZERO = 13;
+        final int SAMPLES_HEAD_PILOT = 200497;
+        final int SAMPLES_DATA_PILOT = 100247;
+        final int SAMPLES_GAP_SHORT = 9667;
+        final int SAMPLES_GAP_MEDIUM = 45787;
+        final int SAMPLES_GAP_LONG = 133012;
+        
+        long numZeros=0;
+        long numOnes=0;
+        
+        for(FileProxy oneProxy:proxies) {
+            
+            int[] fileData = oneProxy.getFileData();
+            int[] fullData = new int[fileData.length+2];
+            
+            System.arraycopy(fileData,0,fullData,1,fileData.length);
+            fullData[0]=0xFF;
+            
+            int chsum=fullData[0];
+            for(int i=0;i<fileData.length;i++) {
+                chsum = chsum^fileData[i];
+            }
+            fullData[fullData.length-1]=chsum;
+            
+            int[] headerData = oneProxy.getHeaderData();
+            int[] fullHeaderData = new int[headerData.length+2];
+            System.arraycopy(headerData,0,fullHeaderData,1,headerData.length);
+            fullHeaderData[0]=0x00;
+            
+            chsum=fullHeaderData[0];
+            for(int i=0;i<headerData.length;i++) {
+                chsum = chsum^headerData[i];
+            }
+            fullHeaderData[fullHeaderData.length-1]=chsum;
+            
+            long headerOnes = getOneBitCount(fullHeaderData);
+            long dataOnes = getOneBitCount(fullData);
+            
+            long headerZeros = fullHeaderData.length*8-headerOnes;
+            long dataZeros = fullData.length*8-dataOnes;
+            
+            numZeros+=(headerZeros+dataZeros);
+            numOnes+=(headerOnes+dataOnes);
+        }
+        
+        
+        
+        long numBasicSamples = numZeros*SAMPLES_ZERO;
+        numBasicSamples+=numOnes*SAMPLES_ONE;
+        numBasicSamples+=proxies.size()*SAMPLES_HEAD_PILOT;
+        numBasicSamples+=proxies.size()*SAMPLES_DATA_PILOT;
+        
+        int numGaps = proxies.size()-1;
+        if (numGaps<0) numGaps=0;
+        
+        di.numSamplesShort=numBasicSamples+numGaps*SAMPLES_GAP_SHORT;
+        di.numSamplesMedium=numBasicSamples+numGaps*SAMPLES_GAP_MEDIUM;        
+        di.numSamplesLong=numBasicSamples+numGaps*SAMPLES_GAP_LONG;        
+        di.numBytes=(numZeros+numOnes)/8;
+        
+        return di;
+    }
+    
+    private static long getOneBitCount(int[] oktets) {
+        
+        long counter=0;
+        for (int oneOktet: oktets) {
+            
+            int mask=128;
+            for(int i=0;i<8;i++) {
+                if ((oneOktet & mask) == mask) counter++;
+                mask=mask>>1;
+            }
+        }
+        return counter;
+    
+    }
+    
+     public static String getTimeStringForSamples(long numSamples,int sampleRate) {
+        
+        long totalSeconds = numSamples/sampleRate;
+        
+        long hours = totalSeconds/3600;
+        long minutes = (totalSeconds-hours*3600)/60;
+        long seconds = (totalSeconds-hours*3600-minutes*60);
+        
+        if (hours>0) {
+            return String.format("%02d:%02d:%02d",hours,minutes,seconds);
+        }
+        else {
+            return String.format("%02d:%02d",minutes,seconds);
+        }
+        
+    }
+    
+    
+    public static class DiskInfo {
+        long numBytes;
+        long numSamplesShort;
+        long numSamplesMedium;
+        long numSamplesLong;
+        
+    }
+    
+    
 
     public static class ExtractorConfig {
 
