@@ -461,7 +461,7 @@ public class UdManFrame extends javax.swing.JFrame {
         sb.append(String.format("Number of files: %d",proxies.size()));
         sb.append("<BR>");
         sb.append(String.format("Total size of files: %d KB",di.numBytes/1024));
-        sb.append("<BR><BR>Estimated recoding durations:<BR>");
+        sb.append("<BR><BR>Estimated recording durations:<BR>");
         sb.append(String.format("Short gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesShort, 44100)));
         sb.append("<BR>");
         sb.append(String.format("Medium gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesMedium, 44100)));
@@ -571,7 +571,7 @@ public class UdManFrame extends javax.swing.JFrame {
         
     }
     
-    private final String TITLE_BASE = "Backup T/D UDMan 0.04";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.06";
     
     private JFileChooser fcImport=null;
     private JFileChooser getImportChooser() {

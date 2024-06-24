@@ -285,11 +285,12 @@ public class Extractor {
         
         final int SAMPLES_ONE = 26;
         final int SAMPLES_ZERO = 13;
-        final int SAMPLES_HEAD_PILOT = 200497;
-        final int SAMPLES_DATA_PILOT = 100247;
-        final int SAMPLES_GAP_SHORT = 9667;
-        final int SAMPLES_GAP_MEDIUM = 45787;
-        final int SAMPLES_GAP_LONG = 133012;
+        final int SAMPLES_HEAD_PILOT = 200496;
+        final int SAMPLES_DATA_PILOT = 100249;
+        final int SAMPLES_GAP_SHORT = 10277;
+        final int SAMPLES_GAP_MEDIUM = 45662;
+        final int SAMPLES_GAP_LONG = 133074;
+        final int SAMPLES_GAP_BETWEEN_HEAD_AND_DATA=290;
         
         long numZeros=0;
         long numOnes=0;
@@ -335,6 +336,7 @@ public class Extractor {
         numBasicSamples+=numOnes*SAMPLES_ONE;
         numBasicSamples+=proxies.size()*SAMPLES_HEAD_PILOT;
         numBasicSamples+=proxies.size()*SAMPLES_DATA_PILOT;
+        numBasicSamples+=proxies.size()*SAMPLES_GAP_BETWEEN_HEAD_AND_DATA;
         
         int numGaps = proxies.size()-1;
         if (numGaps<0) numGaps=0;
