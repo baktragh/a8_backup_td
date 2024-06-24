@@ -131,7 +131,7 @@ public class UtilityDisk {
             );
             
             fileProxies.add(fp);
-            System.out.println(fp.toString());
+            
         }
         
     }
