@@ -13,10 +13,11 @@ For tape preservation, the toolkit allows you to use the most efficient means:
 4. Extended memory of your Atari computer to allow 64 KB buffer for data
 
 ## Components
-The toolkit consists of two components:
+The toolkit consists of three components:
 
-1. BACKUP T/D utility disk
-2. BACKUP T/D extractor 
+1. BACKUP T/D Utility disk (for 8-bit Atari computer) 
+2. BACKUP T/D Extractor (for 8-bit Atari computer)
+3. BACKUP T/D UDMan (for PC/Mac)
 
 ## BACKUP T/D Utility Disk
 
@@ -74,6 +75,19 @@ The extractor provides the following functions:
 * The Turbo 2000 file names can be up to 10 characters long, while disk file names are limited to 8 characters (except the H: devices, where the file names can be much longer).
 * To prevent unwanted file overwrites caused by duplicate file names, use the "Sequential naming" option. The option adds a three-digit prefix to file names extracted to a H: device, or sets a numbered file name extension for other devices.
 
+## BACKUP T/D UDMan (for PC/Mac)
+UDMan (Utility Disk Manager) is an application for PC/Mac that allows the following:
+
+* Open a utility disk
+* List files stored on the utility disk
+* Reorder files stored on the utility disk
+* Rename files stored on the utility disk
+* Extract binary or flat files and tape images
+* Import monolithic binary files
+* Estimate recording time
+ 
+UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
+
 ## How to Backup a Full Tape Side and then Extract the Files
 
 ### Backup
@@ -96,6 +110,9 @@ The extractor provides the following functions:
 6. On the main menu, select the "Extract files from disk" function to extract the files to the virtual hard drive.
 
 ## Changelog
+
+### Version 1.1.0a
+* Included UDMan in the release package.
 
 ### Version 1.1.0
 #### Utility disk
