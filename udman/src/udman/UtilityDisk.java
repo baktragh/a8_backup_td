@@ -104,14 +104,17 @@ public class UtilityDisk {
             }
             
             /*Read the remainder of the last sector*/
-            int remainder = 128-((fileLen+3) % 128);
-            for (int i=0;i<remainder;i++) {
-                int oneByte = bis.read();
-                if (oneByte==-1) {
-                     throw new IOException("EOF Reached prematurely");
+            int remainder = (fileLen + 3) % 128;
+            if (remainder != 0) {
+                int skipBytes = 128 - ((fileLen + 3) % 128);
+
+                for (int i = 0; i < skipBytes; i++) {
+                    int oneByte = bis.read();
+                    if (oneByte == -1) {
+                        throw new IOException("EOF Reached prematurely");
+                    }
                 }
             }
-            
             int[] nameChars = new int[10];
             for (int i=0;i<10;i++) {
                 nameChars[i]=headerSector[3+1+i];
@@ -128,6 +131,7 @@ public class UtilityDisk {
             );
             
             fileProxies.add(fp);
+            System.out.println(fp.toString());
         }
         
     }
