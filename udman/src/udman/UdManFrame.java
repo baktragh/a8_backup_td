@@ -686,7 +686,7 @@ public class UdManFrame extends javax.swing.JFrame {
                     if (validFiles.size() != 1) {
                         return false;
                     }
-                    UtilityDisk ud = new UtilityDisk(validFiles.getFirst().getAbsolutePath());
+                    UtilityDisk ud = new UtilityDisk(validFiles.get(0).getAbsolutePath());
                     setDisk(ud);
                 }
                 else if (hasXex) {
