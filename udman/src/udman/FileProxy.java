@@ -1,5 +1,8 @@
 package udman;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 public class FileProxy {
     
     private final int[] fileData;
@@ -86,6 +89,15 @@ public class FileProxy {
             headerData[11 + 5] = getRun() / 256;
             
             return headerData;
+    }
+
+    InputStream toStream() {
+        byte[] b =new byte[2];
+        b[0]=0x3F;
+        b[1]=0x3F;
+        ByteArrayInputStream bais = new ByteArrayInputStream(b);
+        return bais;
+        
     }
     
     

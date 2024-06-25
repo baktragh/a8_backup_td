@@ -3,12 +3,10 @@ package udman;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.TransferHandler;
@@ -36,7 +34,6 @@ public class UdManFrame extends javax.swing.JFrame {
         fcOpen = new javax.swing.JFileChooser();
         jspScrollFiles = new javax.swing.JScrollPane();
         jlsFiles = new javax.swing.JList<>();
-        setTransferHandler(new ImportExportTransferHandler());
         pStatus = new javax.swing.JPanel();
         lStatus = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -75,7 +72,9 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
 
+        jlsFiles.setTransferHandler(new ImportExportTransferHandler());
         jlsFiles.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
+        jlsFiles.setDragEnabled(true);
         jlsFiles.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 onListSelectionChanged(evt);
@@ -548,7 +547,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
     }
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.07";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.08";
 
     private JFileChooser fcImport = null;
 
@@ -642,6 +641,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
         @Override
         public boolean importData(TransferHandler.TransferSupport support) {
+            
             if (!canImport(support)) {
                 return false;
             }
@@ -701,6 +701,51 @@ public class UdManFrame extends javax.swing.JFrame {
             }
 
             return true;
+        }
+        
+//        @Override
+//        protected Transferable createTransferable(JComponent c) {
+//           
+//            int[] selected = jlsFiles.getSelectedIndices();
+//            if (selected.length!=1) return null;
+//            
+//            DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+//            FileProxy proxy = dlm.getElementAt(selected[0]);
+//            
+//            return new FileProxyTransferable(proxy);
+//        }
+//        
+//        @Override
+//        public int getSourceActions(JComponent c) {
+//            return (COPY|MOVE|LINK);
+//        }
+        
+    }
+    
+    private static class FileProxyTransferable implements Transferable {
+        
+        private static final DataFlavor octetFlavor = new DataFlavor("application/octet-stream",null);
+        private static final DataFlavor[] flavors = {octetFlavor};
+        private final FileProxy fileProxy;
+        
+        FileProxyTransferable(FileProxy proxy) {
+            this.fileProxy=proxy;
+        }
+        
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return flavors;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return (octetFlavor.equals(flavor));
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) throw new UnsupportedFlavorException(flavor);
+            return fileProxy.toStream();
         }
         
     }

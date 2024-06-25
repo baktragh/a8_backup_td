@@ -228,12 +228,13 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="DialogInput" size="12" style="0"/>
             </Property>
+            <Property name="dragEnabled" type="boolean" value="true"/>
           </Properties>
           <Events>
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="onListSelectionChanged"/>
           </Events>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="setTransferHandler(new ImportExportTransferHandler());"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="jlsFiles.setTransferHandler(new ImportExportTransferHandler());"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;FileProxy&gt;"/>
           </AuxValues>
         </Component>
