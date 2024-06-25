@@ -1,11 +1,18 @@
 package udman;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.TransferHandler;
+import static javax.swing.TransferHandler.COPY;
 
 public class UdManFrame extends javax.swing.JFrame {
 
@@ -29,6 +36,7 @@ public class UdManFrame extends javax.swing.JFrame {
         fcOpen = new javax.swing.JFileChooser();
         jspScrollFiles = new javax.swing.JScrollPane();
         jlsFiles = new javax.swing.JList<>();
+        setTransferHandler(new ImportExportTransferHandler());
         pStatus = new javax.swing.JPanel();
         lStatus = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -232,8 +240,10 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onOpenDiskImage(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onOpenDiskImage
         int result = fcOpen.showOpenDialog(this);
-        if (result!=JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile()==null) return;
-        
+        if (result != JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile() == null) {
+            return;
+        }
+
         try {
             File f = fcOpen.getSelectedFile();
             UtilityDisk ud = new UtilityDisk(f.getAbsolutePath());
@@ -244,34 +254,36 @@ public class UdManFrame extends javax.swing.JFrame {
             sb.append("<HTML>");
             sb.append(ioe.getMessage());
             sb.append("</HTML>");
-            
-            JOptionPane.showMessageDialog(this, sb.toString(), "Unable to open disk image",JOptionPane.ERROR_MESSAGE);
+
+            JOptionPane.showMessageDialog(this, sb.toString(), "Unable to open disk image", JOptionPane.ERROR_MESSAGE);
         }
-        
+
     }//GEN-LAST:event_onOpenDiskImage
 
     private void onRename(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRename
-        
+
         /*Check if something selected*/
         int selectedIndex = jlsFiles.getSelectedIndex();
-        if (selectedIndex==-1) return;
-        
+        if (selectedIndex == -1) {
+            return;
+        }
+
         /*Get the selected item*/
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
         FileProxy fp = dlm.getElementAt(selectedIndex);
-        
+
         /*Show the dialog*/
-        RenameDialog rDialog = new RenameDialog(this,true,fp.getNameChars());
+        RenameDialog rDialog = new RenameDialog(this, true, fp.getNameChars());
         rDialog.pack();
         Udman.centerContainer(rDialog);
         rDialog.setVisible(true);
-        
+
         /*If a new value was set, update the model*/
-        if (rDialog.getUpdatedNameChars()!=null) {
+        if (rDialog.getUpdatedNameChars() != null) {
             fp.setNameChars(rDialog.getUpdatedNameChars());
             dlm.itemUpdate(fp);
         }
-        
+
     }//GEN-LAST:event_onRename
 
     private void onSelectNone(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSelectNone
@@ -279,20 +291,24 @@ public class UdManFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_onSelectNone
 
     private void onSelectAll(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSelectAll
-        
+
         int size = jlsFiles.getModel().getSize();
-        if (size==0) return;
-        jlsFiles.getSelectionModel().setSelectionInterval(0,size-1);
+        if (size == 0) {
+            return;
+        }
+        jlsFiles.getSelectionModel().setSelectionInterval(0, size - 1);
     }//GEN-LAST:event_onSelectAll
 
     private void onMoveItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onMoveItem
-        
-        if (jlsFiles.getSelectedIndex()==-1) return;
-        
-        DiskListModel.MoveDirection direction = evt.getSource()==jmiMoveUp?DiskListModel.MoveDirection.UP:DiskListModel.MoveDirection.DOWN;
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+
+        if (jlsFiles.getSelectedIndex() == -1) {
+            return;
+        }
+
+        DiskListModel.MoveDirection direction = evt.getSource() == jmiMoveUp ? DiskListModel.MoveDirection.UP : DiskListModel.MoveDirection.DOWN;
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
         dlm.moveElements(jlsFiles.getSelectedIndices(), direction, jlsFiles.getSelectionModel());
-        
+
     }//GEN-LAST:event_onMoveItem
 
     private void onExit(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExit
@@ -302,32 +318,44 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onSave(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSave
         boolean askForSpec = false;
-        if (evt.getSource()==jmiSaveAs) askForSpec=true;
-        
-        if (!(jlsFiles.getModel() instanceof DiskListModel)) return;
-        
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        if (evt.getSource() == jmiSaveAs) {
+            askForSpec = true;
+        }
+
+        if (!(jlsFiles.getModel() instanceof DiskListModel)) {
+            return;
+        }
+
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
         String filespec = dlm.getDisk().getFilespec();
-        
-        if (filespec.isEmpty()) askForSpec=true;
-        
+
+        if (filespec.isEmpty()) {
+            askForSpec = true;
+        }
+
         if (askForSpec) {
             int result = fcOpen.showSaveDialog(this);
-            if (result!=JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile()==null) return;
+            if (result != JFileChooser.APPROVE_OPTION || fcOpen.getSelectedFile() == null) {
+                return;
+            }
             filespec = fcOpen.getSelectedFile().getAbsolutePath();
         }
-        
+
         try {
             dlm.getDisk().writeImage(filespec);
-            if (askForSpec) dlm.getDisk().setFilespec(filespec);
+            if (askForSpec) {
+                dlm.getDisk().setFilespec(filespec);
+            }
             updateStatus(dlm.getDisk());
         }
         catch (IOException ioe) {
             String excMessage = ioe.getMessage();
-            if (excMessage==null) excMessage="General I/O Error";
+            if (excMessage == null) {
+                excMessage = "General I/O Error";
+            }
             JOptionPane.showMessageDialog(this, excMessage, "Unable to save disk image", JOptionPane.ERROR);
         }
-        
+
     }//GEN-LAST:event_onSave
 
     private void onListSelectionChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onListSelectionChanged
@@ -336,42 +364,50 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onDelete(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onDelete
         int[] selIndices = jlsFiles.getSelectedIndices();
-        if (selIndices.length<1) return;
-        
-        int r = JOptionPane.showConfirmDialog(this, "Do you want to delete the selected files?", "Confirm Deletion", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
-        if (r!=JOptionPane.YES_OPTION) return;
-        
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        if (selIndices.length < 1) {
+            return;
+        }
+
+        int r = JOptionPane.showConfirmDialog(this, "Do you want to delete the selected files?", "Confirm Deletion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (r != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
         dlm.delete(selIndices);
-        
+
     }//GEN-LAST:event_onDelete
 
     private void onExtract(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExtract
         int[] selIndices = jlsFiles.getSelectedIndices();
-        if (selIndices.length<1) return;
-        
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
-        
+        if (selIndices.length < 1) {
+            return;
+        }
+
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
+
         ArrayList<FileProxy> proxies = new ArrayList<>();
-        for(int i=0;i<selIndices.length;i++) {
+        for (int i = 0; i < selIndices.length; i++) {
             proxies.add(dlm.getElementAt(selIndices[i]));
         }
-        
-        ExtractDialog ed = new ExtractDialog(this,proxies);
+
+        ExtractDialog ed = new ExtractDialog(this, proxies);
         ed.pack();
         Udman.centerContainer(ed);
         ed.setVisible(true);
-        
-        
+
+
     }//GEN-LAST:event_onExtract
 
     private void onClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosing
         File f = fcOpen.getCurrentDirectory();
-        if (f!=null) UIPersistence.getInstance().diskFolder=f.getAbsolutePath();
-        if (fcImport!=null && fcImport.getCurrentDirectory()!=null) {
-            UIPersistence.getInstance().importFolder=fcImport.getCurrentDirectory().getAbsolutePath();
+        if (f != null) {
+            UIPersistence.getInstance().diskFolder = f.getAbsolutePath();
         }
-        
+        if (fcImport != null && fcImport.getCurrentDirectory() != null) {
+            UIPersistence.getInstance().importFolder = fcImport.getCurrentDirectory().getAbsolutePath();
+        }
+
         UIPersistence.getInstance().save();
     }//GEN-LAST:event_onClosing
 
@@ -380,99 +416,40 @@ public class UdManFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_onWindowOpened
 
     private void onImport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onImport
-       
+
         JFileChooser fc = getImportChooser();
         int result = fc.showOpenDialog(this);
-        
-        if (result!=JFileChooser.APPROVE_OPTION || fc.getSelectedFiles().length==0) return;
-        
-        int goodCount=0;
-        int totalCount=0;
-        int badCount=0;
-        
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
-        
-        ArrayList<FileProxy> proxies = new ArrayList<>();
-        ArrayList<String> failedFiles = new ArrayList<>();
-        
-        for(File oneFile:fc.getSelectedFiles()) {
-            
-            try {
-                totalCount++;
-                FileProxy oneProxy = dlm.getDisk().importMonolithicBinary(oneFile.getAbsolutePath());
-                proxies.add(oneProxy);
-                goodCount++;
-                
-            }
-            catch (Exception e) {
-                badCount++;
-                String eMsg = e.getMessage();
-                if (eMsg==null) {
-                    eMsg="";
-                }
-                else {
-                    eMsg=": "+eMsg;
-                }
-                
-                failedFiles.add(oneFile.getName()+eMsg);
-                
-            }
-            
+
+        if (result != JFileChooser.APPROVE_OPTION || fc.getSelectedFiles().length == 0) {
+            return;
         }
-        
-        dlm.addProxies(proxies);
-        
-        /*Report*/
-        StringBuilder sb = new StringBuilder();
-        sb.append("<HTML>");
-        String message = String.format("Total files: %d, imported: %d, failed: %d",totalCount,goodCount,badCount);
-        sb.append(message);
-        
-        /*If some failed files*/
-        if (!failedFiles.isEmpty()) {
-            sb.append("<BR><BR>");
-            sb.append("Failed files:<BR>");
-            
-            int itemCount = Math.min(12,failedFiles.size());
-            
-            for(int i=0;i<itemCount;i++) {
-                sb.append(failedFiles.get(i));
-                sb.append("<BR>");
-            }
-            
-            if (itemCount!=failedFiles.size()) {
-                sb.append("...<BR>");
-            }
-        }
-        
-        sb.append("</HTML>");
-        JOptionPane.showMessageDialog(this, sb.toString(), "Import results", JOptionPane.INFORMATION_MESSAGE);
-        
+        importFiles(fc.getSelectedFiles());
+
     }//GEN-LAST:event_onImport
 
     private void onStats(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onStats
-        DiskListModel dlm = (DiskListModel)jlsFiles.getModel();
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
         List<FileProxy> proxies = dlm.getDisk().getProxies();
-        
+
         Extractor.DiskInfo di = Extractor.getDiskInfo(proxies);
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("<HTML>");
-        sb.append(String.format("Number of files: %d",proxies.size()));
+        sb.append(String.format("Number of files: %d", proxies.size()));
         sb.append("<BR>");
-        sb.append(String.format("Total size of files: %d KB",di.numBytes/1024));
+        sb.append(String.format("Total size of files: %d KB", di.numBytes / 1024));
         sb.append("<BR><BR>Estimated recording durations:<BR>");
-        sb.append(String.format("Short gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesShort, 44100)));
+        sb.append(String.format("Short gaps: %s", Extractor.getTimeStringForSamples(di.numSamplesShort, 44100)));
         sb.append("<BR>");
-        sb.append(String.format("Medium gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesMedium, 44100)));
+        sb.append(String.format("Medium gaps: %s", Extractor.getTimeStringForSamples(di.numSamplesMedium, 44100)));
         sb.append("<BR>");
-        sb.append(String.format("Long gaps: %s",Extractor.getTimeStringForSamples(di.numSamplesLong, 44100)));
+        sb.append(String.format("Long gaps: %s", Extractor.getTimeStringForSamples(di.numSamplesLong, 44100)));
         sb.append("<BR>");
         sb.append("</HTML>");
-        
+
         JOptionPane.showMessageDialog(this, sb.toString(), "Statistics", JOptionPane.INFORMATION_MESSAGE);
-        
-        
+
+
     }//GEN-LAST:event_onStats
 
     /**
@@ -551,31 +528,34 @@ public class UdManFrame extends javax.swing.JFrame {
         jlsFiles.setModel(dlm);
         updateStatus(ud);
     }
-    
+
     private void updateStatus(UtilityDisk ud) {
-        
-        String titleDisk = ud.getFileName().isEmpty()?"New disk":ud.getFileName();
-        this.setTitle(TITLE_BASE+" - "+titleDisk);
+
+        String titleDisk = ud.getFileName().isEmpty() ? "New disk" : ud.getFileName();
+        this.setTitle(TITLE_BASE + " - " + titleDisk);
         this.lStatus.setText(ud.getStatusInfo());
     }
-    
+
     private void updateSelectionDependentControlsEnablement() {
-        
+
         int[] indices = jlsFiles.getSelectedIndices();
-        
-        jmiRename.setEnabled(indices.length==1);
-        jmiMoveUp.setEnabled(indices.length>0);
-        jmiMoveDown.setEnabled(indices.length>0);
-        jmiDelete.setEnabled(indices.length>0);
-        jmiExtract.setEnabled(indices.length>0);
-        
+
+        jmiRename.setEnabled(indices.length == 1);
+        jmiMoveUp.setEnabled(indices.length > 0);
+        jmiMoveDown.setEnabled(indices.length > 0);
+        jmiDelete.setEnabled(indices.length > 0);
+        jmiExtract.setEnabled(indices.length > 0);
+
     }
-    
+
     private final String TITLE_BASE = "Backup T/D UDMan 0.07";
-    
-    private JFileChooser fcImport=null;
+
+    private JFileChooser fcImport = null;
+
     private JFileChooser getImportChooser() {
-        if (fcImport!=null) return fcImport;
+        if (fcImport != null) {
+            return fcImport;
+        }
         fcImport = new JFileChooser();
         fcImport.setDialogTitle("Import monolithic binary files");
         fcImport.setDialogType(JFileChooser.OPEN_DIALOG);
@@ -584,5 +564,145 @@ public class UdManFrame extends javax.swing.JFrame {
         fcImport.setMultiSelectionEnabled(true);
         return fcImport;
     }
-    
+
+    private void importFiles(File[] files) {
+        int goodCount = 0;
+        int totalCount = 0;
+        int badCount = 0;
+
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
+
+        ArrayList<FileProxy> proxies = new ArrayList<>();
+        ArrayList<String> failedFiles = new ArrayList<>();
+
+        for (File oneFile : files) {
+
+            try {
+                totalCount++;
+                FileProxy oneProxy = dlm.getDisk().importMonolithicBinary(oneFile.getAbsolutePath());
+                proxies.add(oneProxy);
+                goodCount++;
+
+            }
+            catch (Exception e) {
+                badCount++;
+                String eMsg = e.getMessage();
+                if (eMsg == null) {
+                    eMsg = "";
+                }
+                else {
+                    eMsg = ": " + eMsg;
+                }
+
+                failedFiles.add(oneFile.getName() + eMsg);
+
+            }
+
+        }
+
+        dlm.addProxies(proxies);
+
+        /*Report*/
+        StringBuilder sb = new StringBuilder();
+        sb.append("<HTML>");
+        String message = String.format("Total files: %d, imported: %d, failed: %d", totalCount, goodCount, badCount);
+        sb.append(message);
+
+        /*If some failed files*/
+        if (!failedFiles.isEmpty()) {
+            sb.append("<BR><BR>");
+            sb.append("Failed files:<BR>");
+
+            int itemCount = Math.min(12, failedFiles.size());
+
+            for (int i = 0; i < itemCount; i++) {
+                sb.append(failedFiles.get(i));
+                sb.append("<BR>");
+            }
+
+            if (itemCount != failedFiles.size()) {
+                sb.append("...<BR>");
+            }
+        }
+
+        sb.append("</HTML>");
+        JOptionPane.showMessageDialog(this, sb.toString(), "Import results", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private class ImportExportTransferHandler extends TransferHandler {
+
+        @Override
+        public boolean canImport(TransferHandler.TransferSupport support) {
+            if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                return false;
+            }
+            support.setDropAction(COPY);
+            return true;
+        }
+
+        @Override
+        public boolean importData(TransferHandler.TransferSupport support) {
+            if (!canImport(support)) {
+                return false;
+            }
+
+            Transferable t = support.getTransferable();
+
+            try {
+                java.util.List<?> list = (java.util.List<?>) t.getTransferData(DataFlavor.javaFileListFlavor);
+
+                boolean hasAtr = false;
+                boolean hasXex = false;
+
+                /*Prepare list of relevant files*/
+                ArrayList<File> validFiles = new ArrayList<>();
+                for (Object o : list) {
+                    File f = (File) o;
+                    if (!f.exists() || !f.isFile()) {
+                        continue;
+                    }
+                    String name = f.getName().toLowerCase();
+                    if (name.endsWith(".xex")) {
+                        validFiles.add(f);
+                        hasXex = true;
+                    }
+                    if (name.endsWith(".atr")) {
+                        validFiles.add(f);
+                        hasAtr = true;
+                    }
+                }
+
+                /*If no files, do nothing*/
+                if (validFiles.isEmpty()) {
+                    return false;
+                }
+
+                /*If a mix of files, do nothing*/
+                if (hasAtr && hasXex) {
+                    return false;
+                }
+
+                if (hasAtr) {
+                    if (validFiles.size() != 1) {
+                        return false;
+                    }
+                    UtilityDisk ud = new UtilityDisk(validFiles.getFirst().getAbsolutePath());
+                    setDisk(ud);
+                }
+                else if (hasXex) {
+
+                    File[] fs = new File[validFiles.size()];
+                    importFiles(validFiles.toArray(fs));
+                }
+
+            }
+            catch (UnsupportedFlavorException | IOException e) {
+                return false;
+            }
+
+            return true;
+        }
+        
+    }
+
 }
