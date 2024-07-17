@@ -72,6 +72,9 @@ public class UtilityDisk {
             
             /*Check for 'E' or 'H' sector code*/
             int[] headerSector = readSector(bis);
+            
+            if (headerSector[0]==0xFF) continue;
+            
             if (headerSector[0]!='E' && headerSector[0]!='H') {
                 throw new IOException("Unexpected sector code found. Expected 'H' or 'E', but found "+String.format("$%02X",headerSector[0]) );
             }
@@ -399,9 +402,13 @@ public class UtilityDisk {
                 writeBytes(oneProxy.getFileData(),tempBos);
                 
                 /*Pad the last sector*/
-                int remainder = 128-((oneProxy.getFileData().length+3)%128);
-                for (int i=0;i<remainder;i++) {
-                    tempBos.write(0xFF);
+                int remainder = ((oneProxy.getFileData().length + 3) % 128);
+                if (remainder != 0) {
+
+                    int paddingBytes = 128 - remainder;
+                    for (int i = 0; i < paddingBytes; i++) {
+                        tempBos.write(0xFF);
+                    }
                 }
                 
                 writtenSectors+=((oneProxy.getFileData().length+3)/128);
