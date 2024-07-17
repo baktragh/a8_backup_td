@@ -1,6 +1,7 @@
 package udman.dtb;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,16 +48,23 @@ public class DOS2Binary {
             }
         }
         
-        byte[] filebData;
         
-        try (FileInputStream fis = new FileInputStream(filename); BufferedInputStream bis = new BufferedInputStream(fis, 4096)) {
+        byte[] fileBytes;
+        
+        try (FileInputStream fis = new FileInputStream(filename); BufferedInputStream bis = new BufferedInputStream(fis, 4096); /*Get all the data from the file*/ ByteArrayOutputStream baos = new ByteArrayOutputStream(1024)) {
 
-            /*Get all the data from the file*/
-            filebData = bis.readAllBytes();
+            int result;
+            while ((result=bis.read())!=-1) {
+                baos.write(result);
+            }
+            
+            baos.flush();
+            fileBytes = baos.toByteArray();
+            
         }
 
         /*Convert the data to array if integers*/
-        int[] fileData = getAsIntArray(filebData,filebData.length);
+        int[] fileData = getAsIntArray(fileBytes,fileBytes.length);
 
         analyze(fileData, true);
 
