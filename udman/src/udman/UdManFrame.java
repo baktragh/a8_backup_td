@@ -548,7 +548,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
     }
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.12";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.13";
 
     private JFileChooser fcImport = null;
 
@@ -623,7 +623,7 @@ public class UdManFrame extends javax.swing.JFrame {
         /*Report*/
         StringBuilder sb = new StringBuilder();
         sb.append("<HTML>");
-        String message = String.format("Total files: %d, imported: %d, failed: %d", totalCount, goodCount, badCount);
+        String message = String.format("Input files: %d, imported files: %d, failed files: %d", totalCount, goodCount, badCount);
         sb.append(message);
 
         /*If some failed files*/

@@ -44,6 +44,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         jcbBinaries = new javax.swing.JCheckBox();
         jcbTapeImages = new javax.swing.JCheckBox();
         jcbForceBinaries = new javax.swing.JCheckBox();
+        jcbBigCas = new javax.swing.JCheckBox();
         pNaming = new javax.swing.JPanel();
         jcbShortNames = new javax.swing.JRadioButton();
         jrbLongames = new javax.swing.JRadioButton();
@@ -145,12 +146,20 @@ public class ExtractDialog extends javax.swing.JDialog {
 
         jcbForceBinaries.setText("Extract all file types to binary files");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         pSettings.add(jcbForceBinaries, gridBagConstraints);
+
+        jcbBigCas.setText("Extract to single tape image");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        pSettings.add(jcbBigCas, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -211,6 +220,7 @@ public class ExtractDialog extends javax.swing.JDialog {
                 jcbForceBinaries.isSelected(),
                 jrbLongames.isSelected(),
                 jcbSequentialNaming.isSelected(),
+                jcbBigCas.isSelected(),
                 jtfOutputFolder.getText(),
                 fileProxies
         );
@@ -255,6 +265,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         jcbForceBinaries.setSelected(uip.extractForceBinaries);
         jrbLongames.setSelected(uip.extractLongNames);
         jcbSequentialNaming.setSelected(uip.extractSequentialNaming);
+        jcbBigCas.setSelected(uip.extractBigCas);
         
     }//GEN-LAST:event_onWindowOpened
 
@@ -266,6 +277,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         uip.extractForceBinaries=jcbForceBinaries.isSelected();
         uip.extractLongNames=jcbShortNames.isSelected();
         uip.extractSequentialNaming=jcbSequentialNaming.isSelected();
+        uip.extractBigCas=jcbBigCas.isSelected();
     }//GEN-LAST:event_onClosing
 
     private void onCancel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onCancel
@@ -325,6 +337,7 @@ public class ExtractDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton jbtCancel;
     private javax.swing.JButton jbtExtract;
+    private javax.swing.JCheckBox jcbBigCas;
     private javax.swing.JCheckBox jcbBinaries;
     private javax.swing.JCheckBox jcbForceBinaries;
     private javax.swing.JCheckBox jcbSequentialNaming;

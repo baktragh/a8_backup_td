@@ -1,16 +1,50 @@
 package udman;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Extractor {
 
+
+    private static class SingleCasContext {
+        private List<ByteArrayOutputStream> streams = null;
+        private final String fileName;
+        
+        SingleCasContext(String fileName,String outputDirectory) {
+            this.fileName=outputDirectory+System.getProperty("file.separator")+fileName;
+            streams = new ArrayList<>();
+        }
+        
+        int getCounter() {
+            return streams.size();
+        }
+        
+        void addStream(ByteArrayOutputStream baos) {
+            streams.add(baos);
+        }
+        
+        void flush() throws Exception {
+            
+            if (streams.isEmpty()) return;
+            
+            try (FileOutputStream fos = new FileOutputStream(fileName)) {
+                for(ByteArrayOutputStream oneStream: streams) {
+                    byte[] oneArr = oneStream.toByteArray();
+                    fos.write(oneArr);
+                }
+            }
+        }
+    }
+    
     private final ExtractorConfig ec;
+    private SingleCasContext scc;
 
     public Extractor(ExtractorConfig ec) {
         this.ec = ec;
+        this.scc=null;
     }
 
     int extract() throws Exception {
@@ -111,12 +145,18 @@ public class Extractor {
                         casName = casName.toUpperCase();
                     }
                 }
+                
+                if (ec.singleCas && scc==null) {
+                    scc = new SingleCasContext(casName,ec.outputDirectory);
+                }
 
-                exportToCas(oneProxy, casName);
+                exportToCas(oneProxy, casName,scc);
             }
             counter++;
 
         }
+        
+        if (scc!=null) scc.flush();
 
         return counter;
     }
@@ -182,18 +222,27 @@ public class Extractor {
 
     }
 
-    private void exportToCas(FileProxy oneProxy, String casName) throws Exception {
+    private void exportToCas(FileProxy oneProxy, String casName,SingleCasContext scc) throws Exception {
 
-        try (FileOutputStream fos = new FileOutputStream(ec.outputDirectory + System.getProperty("file.separator") + casName);
-                BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+        SingleCasContext effContext = (scc == null) ? new SingleCasContext(casName, ec.outputDirectory) : scc;
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
             /*Write FUJI and PWMS*/
-            final char[] headerBlob = {'F', 'U', 'J', 'I',
-                0x00, 0x00, 0x00, 0x00,
+            final char[] headerBlob1 = {'F', 'U', 'J', 'I',
+                0x00, 0x00, 0x00, 0x00};
+            final char[] headerBlob2 = {
                 'p', 'w', 'm', 's',
                 0x02, 0x00, 0x06, 0x00, 0x44, 0xAC};
 
-            for (char oneByte : headerBlob) {
+            /*Write the FUJI chunk only at the beginning*/
+            if (effContext.getCounter() == 0) {
+
+                for (char oneByte : headerBlob1) {
+                    bos.write(oneByte);
+                }
+            }
+            for (char oneByte : headerBlob2) {
                 bos.write(oneByte);
             }
 
@@ -206,7 +255,7 @@ public class Extractor {
                 'p', 'w', 'm', 'd',
                 0xFF, 0xFE, 0x0C, 0x1A
             };
-                
+
 
             /*Zap the header block prefix*/
             blockPrefixHeader[27] = (char) (19 & 0x00FF);
@@ -219,10 +268,10 @@ public class Extractor {
 
             /*Construct the header block full data, including id byte and checksum*/
             int[] headerFullData = new int[19];
-            
+
             headerFullData[0] = 0x00;
-            System.arraycopy(oneProxy.getHeaderData(),0,headerFullData,1,oneProxy.getHeaderData().length);
-            
+            System.arraycopy(oneProxy.getHeaderData(), 0, headerFullData, 1, oneProxy.getHeaderData().length);
+
             int chsum = headerFullData[0];
             for (int i = 0; i < 17; i++) {
                 chsum = chsum ^ headerFullData[1 + i];
@@ -251,7 +300,7 @@ public class Extractor {
                 'p', 'w', 'm', 'd',
                 0xFF, 0xFE, 0x0C, 0x1A
             };
-                
+
 
             /*Zap the data block prefix*/
             blockPrefixData[27] = (char) ((oneProxy.getLength() + 2) & 0x00FF);
@@ -274,6 +323,14 @@ public class Extractor {
             /*Termination pulse*/
             for (int oneByte : pwmlBlob) {
                 bos.write(oneByte);
+            }
+
+            if (scc == null) {
+                effContext.addStream(bos);
+                effContext.flush();
+            }
+            else {
+                scc.addStream(bos);
             }
         }
 
@@ -401,13 +458,15 @@ public class Extractor {
         boolean sequentialNames;
         String outputDirectory;
         ArrayList<FileProxy> fileProxies;
+        boolean singleCas;
 
-        public ExtractorConfig(boolean toBinary, boolean toCas, boolean forceBinary, boolean longNames, boolean sequentialNames, String outputDirectory, ArrayList<FileProxy> fileProxies) {
+        public ExtractorConfig(boolean toBinary, boolean toCas, boolean forceBinary, boolean longNames, boolean sequentialNames, boolean singleCas, String outputDirectory, ArrayList<FileProxy> fileProxies) {
             this.toBinary = toBinary;
             this.toCas = toCas;
             this.forceBinary = forceBinary;
             this.longNames = longNames;
             this.sequentialNames = sequentialNames;
+            this.singleCas=singleCas;
             this.outputDirectory = outputDirectory;
             this.fileProxies = fileProxies;
         }
