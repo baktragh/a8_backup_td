@@ -9,9 +9,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import udman.dtb.DOS2Binary;
 import udman.dtb.DOS2BinaryProcessingException;
+import udman.tapeimage.PWMChunk;
+import udman.tapeimage.TapeImage;
+import udman.tapeimage.TapeImageChunk;
 
 public class UtilityDisk {
     
@@ -506,6 +510,97 @@ public class UtilityDisk {
         );
         
         return newProxy;
+        
+    }
+    
+    
+    private enum TapeScanState {
+        LOOK_FOR_HEADER,
+        LOOK_FOR_DATA
+    }
+    
+    public List<FileProxy> importTapeImage(String filespec) throws Exception {
+        
+        TapeImage ti = new TapeImage();
+        ti.parse(filespec);
+        
+        int chunkCount = ti.getChunkCount();
+        List<PWMChunk> pwmdChunks = new ArrayList<>();
+        
+        ArrayList<FileProxy> proxies = new ArrayList<>();
+        
+        /*Extract all pwmd chunks*/
+        for(int i=0;i<chunkCount;i++) {
+            TapeImageChunk c = ti.getChunkAt(i);
+            if (c instanceof PWMChunk && c.getType().equals("pwmd")) {
+                pwmdChunks.add((PWMChunk)c);
+            }
+        }
+        
+        TapeScanState state = TapeScanState.LOOK_FOR_HEADER;
+        int[] lastHeaderFound = null;
+        
+        for(PWMChunk oneChunk:pwmdChunks) {
+            
+            if (state==TapeScanState.LOOK_FOR_HEADER) {
+                int[] headerData = oneChunk.getData();
+                if (headerData.length==19 && headerData[0]==0x00) {
+                    int chsum = headerData[0];
+                    for (int i=1;i<headerData.length-1;i++) {
+                        chsum = chsum ^ headerData[i];
+                    }
+                    if (chsum==headerData[headerData.length-1]) {
+                        lastHeaderFound=headerData;
+                        state= TapeScanState.LOOK_FOR_DATA;
+                    }
+                }
+                
+            }
+            
+            else if (state==TapeScanState.LOOK_FOR_DATA) {
+                int[] bodyData = oneChunk.getData();
+                
+                /*Check the beginning*/
+                if (bodyData[0]!=0xFF) {
+                    state = TapeScanState.LOOK_FOR_HEADER;
+                    continue;
+                }
+                /*Check checksum*/
+                int chsum = bodyData[0];
+                for(int i=1;i<bodyData.length-1;i++) {
+                    chsum = chsum ^ bodyData[i];
+                }
+                /*If not match, then reset state*/
+                if (bodyData[bodyData.length-1]!=chsum) {
+                    state = TapeScanState.LOOK_FOR_HEADER;
+                    continue;
+                }
+                
+                /*Get fields*/
+                int type = lastHeaderFound[1];
+                int loadAddr = lastHeaderFound[1+10+1]+lastHeaderFound[1+10+2]*256;
+                int length = lastHeaderFound[1+10+3]+lastHeaderFound[1+10+4]*256;
+                int runAddr = lastHeaderFound[1+10+5]+lastHeaderFound[1+10+6]*256;
+                
+                int[] nameChars = new int[10];
+                for(int i=0;i<10;i++) {
+                    nameChars[i]=lastHeaderFound[2+i];
+                }
+                
+                /*If the length in the header is a match, create a proxy*/
+                if (length==bodyData.length-2) {
+                    proxies.add(new FileProxy(Arrays.copyOfRange(bodyData, 1, bodyData.length-1) ,type,loadAddr,length,runAddr,nameChars));
+                }
+                
+                /*In any case, look for header*/
+                state = TapeScanState.LOOK_FOR_HEADER;
+                
+            }
+            
+            
+        }
+        
+        return proxies;
         
     }
 

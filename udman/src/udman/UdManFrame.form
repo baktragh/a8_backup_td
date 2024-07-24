@@ -65,7 +65,7 @@
                   <KeyStroke key="Ctrl+I"/>
                 </Property>
                 <Property name="mnemonic" type="int" value="73"/>
-                <Property name="text" type="java.lang.String" value="Import monolithic binaries..."/>
+                <Property name="text" type="java.lang.String" value="Import files..."/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="onImport"/>

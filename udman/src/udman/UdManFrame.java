@@ -11,6 +11,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.TransferHandler;
 import static javax.swing.TransferHandler.COPY;
+import javax.swing.filechooser.FileFilter;
 
 public class UdManFrame extends javax.swing.JFrame {
 
@@ -137,7 +138,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
         jmiImport.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jmiImport.setMnemonic('I');
-        jmiImport.setText("Import monolithic binaries...");
+        jmiImport.setText("Import files...");
         jmiImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onImport(evt);
@@ -547,7 +548,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
     }
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.11";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.12";
 
     private JFileChooser fcImport = null;
 
@@ -556,11 +557,21 @@ public class UdManFrame extends javax.swing.JFrame {
             return fcImport;
         }
         fcImport = new JFileChooser();
-        fcImport.setDialogTitle("Import monolithic binary files");
+        fcImport.setDialogTitle("Import monolithic binary files or tape images");
         fcImport.setDialogType(JFileChooser.OPEN_DIALOG);
         fcImport.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fcImport.setCurrentDirectory(new File(UIPersistence.getInstance().importFolder));
         fcImport.setMultiSelectionEnabled(true);
+        fcImport.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File pathName) {
+                return (pathName.getName().toUpperCase().endsWith(".XEX") || pathName.getName().toUpperCase().endsWith(".CAS") || pathName.isDirectory());
+            }
+            @Override
+            public String getDescription() {
+                return "Binary files (.xex) and tape images (.cas)";
+            }
+        });
         return fcImport;
     }
 
@@ -578,9 +589,17 @@ public class UdManFrame extends javax.swing.JFrame {
 
             try {
                 totalCount++;
-                FileProxy oneProxy = dlm.getDisk().importMonolithicBinary(oneFile.getAbsolutePath());
-                proxies.add(oneProxy);
-                goodCount++;
+                
+                if (oneFile.getName().toUpperCase().endsWith((".XEX"))) {
+                    FileProxy oneProxy = dlm.getDisk().importMonolithicBinary(oneFile.getAbsolutePath());
+                    proxies.add(oneProxy);
+                    goodCount++;
+                }
+                else if (oneFile.getName().toUpperCase().endsWith((".CAS"))) {
+                    List<FileProxy> casProxies = dlm.getDisk().importTapeImage(oneFile.getAbsolutePath());
+                    proxies.addAll(casProxies);
+                    goodCount+=casProxies.size();
+                }
 
             }
             catch (Exception e) {
