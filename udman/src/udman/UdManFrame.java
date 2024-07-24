@@ -672,6 +672,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
                 boolean hasAtr = false;
                 boolean hasXex = false;
+                boolean hasCas = false;
 
                 /*Prepare list of relevant files*/
                 ArrayList<File> validFiles = new ArrayList<>();
@@ -689,6 +690,10 @@ public class UdManFrame extends javax.swing.JFrame {
                         validFiles.add(f);
                         hasAtr = true;
                     }
+                    if (name.endsWith(".cas")) {
+                        validFiles.add(f);
+                        hasCas=true;
+                    }
                 }
 
                 /*If no files, do nothing*/
@@ -697,7 +702,7 @@ public class UdManFrame extends javax.swing.JFrame {
                 }
 
                 /*If a mix of files, do nothing*/
-                if (hasAtr && hasXex) {
+                if (hasAtr && (hasXex || hasCas)) {
                     return false;
                 }
 
@@ -708,7 +713,7 @@ public class UdManFrame extends javax.swing.JFrame {
                     UtilityDisk ud = new UtilityDisk(validFiles.get(0).getAbsolutePath());
                     setDisk(ud);
                 }
-                else if (hasXex) {
+                else if (hasXex || hasCas) {
 
                     File[] fs = new File[validFiles.size()];
                     importFiles(validFiles.toArray(fs));
