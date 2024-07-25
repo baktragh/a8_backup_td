@@ -84,6 +84,7 @@ UDMan (Utility Disk Manager) is an application for PC/Mac that allows the follow
 * Rename files stored on the utility disk
 * Extract binary or flat files and tape images
 * Import monolithic binary files
+* Import Turbo 2000 files from tape images
 * Estimate recording time
  
 UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
@@ -109,7 +110,23 @@ UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 5. Verify that H1 is selected as the target device.
 6. On the main menu, select the "Extract files from disk" function to extract the files to the virtual hard drive.
 
+### Extraction Using UDMan
+1. Move the disk image to your PC or Mac
+2. Run udman.jar
+3. Open the disk image (File | Open disk image...)
+4. Select files to be extracted 
+5. Invoke extraction (File | Extract files... )
+6. Specify extraction options (output directory, file type, etc.)
+7. Confirm extraction
+
 ## Changelog
+
+### Version 1.1.0c
+* UDMan version 0.13 allows importing Turbo 2000 files from tape images. Also allows exporting multiple Turbo 2000 files to one single tape image.
+
+### Version 1.1.0b
+* Fixed a bug in UDMan. Saving .atr file with files of certain length resulted in corruption of the .atr image by inserting an extraneous empty sector.
+* This version fixes the bug and ensures the corrupted .atr can be opened and automatically fixed by re-saving.
 
 ### Version 1.1.0a
 * Included UDMan in the release package.
