@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.TransferHandler;
@@ -24,6 +25,7 @@ public class UdManFrame extends javax.swing.JFrame {
         updateSelectionDependentControlsEnablement();
         updateSelectionSize();
         initFonts();
+        
         
     }
 
@@ -71,6 +73,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(TITLE_BASE);
+        setIconImage(new ImageIcon(getClass().getResource("/udman/resources/windowicon.png")).getImage());
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 onClosing(evt);
@@ -632,7 +635,7 @@ public class UdManFrame extends javax.swing.JFrame {
     }
     
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.14";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.15";
 
     private JFileChooser fcImport = null;
 
