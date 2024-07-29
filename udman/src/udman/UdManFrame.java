@@ -21,6 +21,7 @@ public class UdManFrame extends javax.swing.JFrame {
     public UdManFrame() {
         initComponents();
         updateSelectionDependentControlsEnablement();
+        updateSelectionSize();
     }
 
     /**
@@ -31,12 +32,14 @@ public class UdManFrame extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         fcOpen = new javax.swing.JFileChooser();
         jspScrollFiles = new javax.swing.JScrollPane();
         jlsFiles = new javax.swing.JList<>();
         pStatus = new javax.swing.JPanel();
-        lStatus = new javax.swing.JLabel();
+        lDiskStatus = new javax.swing.JLabel();
+        lSelection = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jmFile = new javax.swing.JMenu();
         jmiOpen = new javax.swing.JMenuItem();
@@ -85,11 +88,29 @@ public class UdManFrame extends javax.swing.JFrame {
 
         getContentPane().add(jspScrollFiles, java.awt.BorderLayout.CENTER);
 
-        pStatus.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 4));
+        pStatus.setLayout(new java.awt.GridBagLayout());
 
-        lStatus.setFont(lStatus.getFont().deriveFont((lStatus.getFont().getStyle() & ~java.awt.Font.ITALIC) & ~java.awt.Font.BOLD, lStatus.getFont().getSize()-1));
-        lStatus.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        pStatus.add(lStatus);
+        lDiskStatus.setFont(lDiskStatus.getFont().deriveFont((lDiskStatus.getFont().getStyle() & ~java.awt.Font.ITALIC) & ~java.awt.Font.BOLD, lDiskStatus.getFont().getSize()-1));
+        lDiskStatus.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        pStatus.add(lDiskStatus, gridBagConstraints);
+
+        lSelection.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        pStatus.add(lSelection, gridBagConstraints);
 
         getContentPane().add(pStatus, java.awt.BorderLayout.SOUTH);
 
@@ -192,7 +213,7 @@ public class UdManFrame extends javax.swing.JFrame {
         jmEdit.add(jmiSelectAll);
         jmEdit.add(jSeparator2);
 
-        jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiRename.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F2, 0));
         jmiRename.setMnemonic('R');
         jmiRename.setText("Rename...");
         jmiRename.addActionListener(new java.awt.event.ActionListener() {
@@ -360,6 +381,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onListSelectionChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onListSelectionChanged
         updateSelectionDependentControlsEnablement();
+        updateSelectionSize();
     }//GEN-LAST:event_onListSelectionChanged
 
     private void onDelete(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onDelete
@@ -518,7 +540,8 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiSelectAll;
     private javax.swing.JMenuItem jmiSelectNone;
     private javax.swing.JScrollPane jspScrollFiles;
-    private javax.swing.JLabel lStatus;
+    private javax.swing.JLabel lDiskStatus;
+    private javax.swing.JLabel lSelection;
     private javax.swing.JPanel pStatus;
     // End of variables declaration//GEN-END:variables
 
@@ -533,7 +556,7 @@ public class UdManFrame extends javax.swing.JFrame {
 
         String titleDisk = ud.getFileName().isEmpty() ? "New disk" : ud.getFileName();
         this.setTitle(TITLE_BASE + " - " + titleDisk);
-        this.lStatus.setText(ud.getStatusInfo());
+        this.lDiskStatus.setText(ud.getStatusInfo());
     }
 
     private void updateSelectionDependentControlsEnablement() {
@@ -547,8 +570,28 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiExtract.setEnabled(indices.length > 0);
 
     }
+    
+    private void updateSelectionSize() {
+        
+        int[] indices = jlsFiles.getSelectedIndices();
+        if (indices.length==0) {
+            lSelection.setText("Files: "+jlsFiles.getModel().getSize());
+            return;
+        }
+        
+        int totalBytes=0;
+        for (int oneIndex:indices) {
+            FileProxy p = jlsFiles.getModel().getElementAt(oneIndex);
+            totalBytes+=p.getLength();
+        }
+        
+        lSelection.setText(String.format("Selected files %d; %.2f KB",indices.length,totalBytes/1024.0));
+        
+        
+    }
+    
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.13";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.14";
 
     private JFileChooser fcImport = null;
 

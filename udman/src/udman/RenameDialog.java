@@ -26,6 +26,9 @@ public class RenameDialog extends javax.swing.JDialog {
         jtfText.setText(sbText.toString().trim());
         jtfHex.setText(sbHex.toString().trim());
         
+        getRootPane().setDefaultButton(jbtConfirm);
+        jtfText.grabFocus();
+        
     }
 
     /**

@@ -18,6 +18,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         super(parent, true);
         initComponents();
         this.fileProxies=proxies;
+        getRootPane().setDefaultButton(jbtExtract);
     }
 
     /**
@@ -104,6 +105,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         pOutput.add(jtfOutputFolder, gridBagConstraints);
 
         jButton1.setText("Browse...");
+        jButton1.setDefaultCapable(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onBrowse(evt);
