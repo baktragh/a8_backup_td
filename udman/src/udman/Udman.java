@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class Udman {
     
@@ -33,6 +34,7 @@ public class Udman {
         }
         
         UIPersistence.getInstance().load();
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         
         UdManFrame f = new UdManFrame();
 

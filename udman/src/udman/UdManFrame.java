@@ -1,5 +1,6 @@
 package udman;
 
+import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -22,6 +23,8 @@ public class UdManFrame extends javax.swing.JFrame {
         initComponents();
         updateSelectionDependentControlsEnablement();
         updateSelectionSize();
+        initFonts();
+        
     }
 
     /**
@@ -63,6 +66,8 @@ public class UdManFrame extends javax.swing.JFrame {
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         jmiMoveUp = new javax.swing.JMenuItem();
         jmiMoveDown = new javax.swing.JMenuItem();
+        jmiView = new javax.swing.JMenu();
+        jmiLargeFonts = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(TITLE_BASE);
@@ -254,6 +259,21 @@ public class UdManFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(jmEdit);
 
+        jmiView.setMnemonic('V');
+        jmiView.setText("View");
+
+        jmiLargeFonts.setMnemonic('L');
+        jmiLargeFonts.setSelected(true);
+        jmiLargeFonts.setText("Large font");
+        jmiLargeFonts.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                onFontChange(evt);
+            }
+        });
+        jmiView.add(jmiLargeFonts);
+
+        jMenuBar1.add(jmiView);
+
         setJMenuBar(jMenuBar1);
 
         pack();
@@ -435,6 +455,8 @@ public class UdManFrame extends javax.swing.JFrame {
 
     private void onWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onWindowOpened
         fcOpen.setCurrentDirectory(new File(UIPersistence.getInstance().diskFolder));
+        jmiLargeFonts.setSelected(UIPersistence.getInstance().largeFont);
+        
     }//GEN-LAST:event_onWindowOpened
 
     private void onImport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onImport
@@ -473,6 +495,10 @@ public class UdManFrame extends javax.swing.JFrame {
 
 
     }//GEN-LAST:event_onStats
+
+    private void onFontChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onFontChange
+        updateFont();
+    }//GEN-LAST:event_onFontChange
 
     /**
      * @param args the command line arguments
@@ -531,6 +557,7 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiExtract;
     private javax.swing.JMenuItem jmiImport;
+    private javax.swing.JCheckBoxMenuItem jmiLargeFonts;
     private javax.swing.JMenuItem jmiMoveDown;
     private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
@@ -539,6 +566,7 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiSaveAs;
     private javax.swing.JMenuItem jmiSelectAll;
     private javax.swing.JMenuItem jmiSelectNone;
+    private javax.swing.JMenu jmiView;
     private javax.swing.JScrollPane jspScrollFiles;
     private javax.swing.JLabel lDiskStatus;
     private javax.swing.JLabel lSelection;
@@ -550,6 +578,19 @@ public class UdManFrame extends javax.swing.JFrame {
         dlm.setDisk(ud);
         jlsFiles.setModel(dlm);
         updateStatus(ud);
+    }
+    
+    private Font normalFont;
+    private Font largeFont;
+    private Font normalStatusFont;
+    private Font largeStatusFont;
+    
+    private void initFonts() {
+        normalFont = jlsFiles.getFont();
+        largeFont = normalFont.deriveFont(normalFont.getSize()*1.3f);
+        normalStatusFont = lSelection.getFont();
+        largeStatusFont = normalStatusFont.deriveFont(normalFont.getSize()*1.3f);
+        
     }
 
     private void updateStatus(UtilityDisk ud) {
@@ -690,6 +731,17 @@ public class UdManFrame extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, sb.toString(), "Import results", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    private void updateFont() {
+        if (jmiLargeFonts.isSelected()) {
+            jlsFiles.setFont(largeFont);
+            lSelection.setFont(largeStatusFont);
+        }
+        else {
+            jlsFiles.setFont(normalFont);
+            lSelection.setFont(normalStatusFont);
+        }
+    }
+
     private class ImportExportTransferHandler extends TransferHandler {
 
         @Override
@@ -788,6 +840,8 @@ public class UdManFrame extends javax.swing.JFrame {
 //        }
         
     }
+    
+    
     
     private static class FileProxyTransferable implements Transferable {
         

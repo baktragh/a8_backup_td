@@ -17,6 +17,7 @@ public class UIPersistence implements Serializable {
     boolean extractLongNames;
     String importFolder;
     boolean extractBigCas;
+    boolean largeFont;
     
     private UIPersistence() {
         
@@ -29,6 +30,7 @@ public class UIPersistence implements Serializable {
         extractLongNames=true;
         importFolder="";
         extractBigCas=false;
+        largeFont=false;
         
     }
     
