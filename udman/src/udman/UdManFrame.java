@@ -25,6 +25,7 @@ public class UdManFrame extends javax.swing.JFrame {
         updateSelectionDependentControlsEnablement();
         updateSelectionSize();
         initFonts();
+        loadPersistence();
         
         
     }
@@ -77,9 +78,6 @@ public class UdManFrame extends javax.swing.JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 onClosing(evt);
-            }
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                onWindowOpened(evt);
             }
         });
         getContentPane().setLayout(new java.awt.BorderLayout(4, 4));
@@ -445,22 +443,20 @@ public class UdManFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_onExtract
 
     private void onClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosing
+        
+        UIPersistence up = UIPersistence.getInstance();
+        
         File f = fcOpen.getCurrentDirectory();
         if (f != null) {
-            UIPersistence.getInstance().diskFolder = f.getAbsolutePath();
+            up.diskFolder = f.getAbsolutePath();
         }
         if (fcImport != null && fcImport.getCurrentDirectory() != null) {
-            UIPersistence.getInstance().importFolder = fcImport.getCurrentDirectory().getAbsolutePath();
+            up.importFolder = fcImport.getCurrentDirectory().getAbsolutePath();
         }
-
-        UIPersistence.getInstance().save();
+        up.largeFont=jmiLargeFonts.isSelected();
+        up.mainWindowBounds=this.getBounds();
+        up.save();
     }//GEN-LAST:event_onClosing
-
-    private void onWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onWindowOpened
-        fcOpen.setCurrentDirectory(new File(UIPersistence.getInstance().diskFolder));
-        jmiLargeFonts.setSelected(UIPersistence.getInstance().largeFont);
-        
-    }//GEN-LAST:event_onWindowOpened
 
     private void onImport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onImport
 
@@ -742,6 +738,22 @@ public class UdManFrame extends javax.swing.JFrame {
         else {
             jlsFiles.setFont(normalFont);
             lSelection.setFont(normalStatusFont);
+        }
+    }
+    
+    private void loadPersistence() {
+         UIPersistence up = UIPersistence.getInstance();
+        
+        fcOpen.setCurrentDirectory(new File(up.diskFolder));
+        jmiLargeFonts.setSelected(up.largeFont);
+        updateFont();
+        
+        if (up.mainWindowBounds==null) {
+            pack();
+            Udman.centerContainer(this);
+        }
+        else {
+            setBounds(up.mainWindowBounds);
         }
     }
 

@@ -41,10 +41,7 @@ public class Udman {
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                
                 if (ud!=null) f.setDisk(ud);
-                f.pack();
-                centerContainer(f);
                 f.setVisible(true);
             }
         });

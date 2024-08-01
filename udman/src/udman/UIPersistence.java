@@ -1,5 +1,6 @@
 package udman;
 
+import java.awt.Rectangle;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
@@ -18,6 +19,7 @@ public class UIPersistence implements Serializable {
     String importFolder;
     boolean extractBigCas;
     boolean largeFont;
+    Rectangle mainWindowBounds;
     
     private UIPersistence() {
         
@@ -31,6 +33,7 @@ public class UIPersistence implements Serializable {
         importFolder="";
         extractBigCas=false;
         largeFont=false;
+        mainWindowBounds=null;
         
     }
     
