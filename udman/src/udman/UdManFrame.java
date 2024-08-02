@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ public class UdManFrame extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         jmiRename = new javax.swing.JMenuItem();
         jmiDelete = new javax.swing.JMenuItem();
+        jmiDeleteInstantly = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         jmiMoveUp = new javax.swing.JMenuItem();
         jmiMoveDown = new javax.swing.JMenuItem();
@@ -229,6 +231,7 @@ public class UdManFrame extends javax.swing.JFrame {
         });
         jmEdit.add(jmiRename);
 
+        jmiDelete.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
         jmiDelete.setText("Delete...");
         jmiDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -236,6 +239,15 @@ public class UdManFrame extends javax.swing.JFrame {
             }
         });
         jmEdit.add(jmiDelete);
+
+        jmiDeleteInstantly.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jmiDeleteInstantly.setText("Delete instantly");
+        jmiDeleteInstantly.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onDeleteInstantly(evt);
+            }
+        });
+        jmEdit.add(jmiDeleteInstantly);
         jmEdit.add(jSeparator4);
 
         jmiMoveUp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_UP, java.awt.event.InputEvent.ALT_DOWN_MASK));
@@ -406,18 +418,7 @@ public class UdManFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_onListSelectionChanged
 
     private void onDelete(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onDelete
-        int[] selIndices = jlsFiles.getSelectedIndices();
-        if (selIndices.length < 1) {
-            return;
-        }
-
-        int r = JOptionPane.showConfirmDialog(this, "Do you want to delete the selected files?", "Confirm Deletion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        if (r != JOptionPane.YES_OPTION) {
-            return;
-        }
-
-        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
-        dlm.delete(selIndices);
+        doDelete(false);
 
     }//GEN-LAST:event_onDelete
 
@@ -499,6 +500,26 @@ public class UdManFrame extends javax.swing.JFrame {
         updateFont();
     }//GEN-LAST:event_onFontChange
 
+    private void onDeleteInstantly(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onDeleteInstantly
+       doDelete(true);
+    }//GEN-LAST:event_onDeleteInstantly
+
+    private void doDelete(boolean instantly) {
+        int[] selIndices = jlsFiles.getSelectedIndices();
+        if (selIndices.length < 1) {
+            return;
+        }
+
+        if (!instantly) {
+            int r = JOptionPane.showConfirmDialog(this, "Do you want to delete the selected files?", "Confirm Deletion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (r != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        DiskListModel dlm = (DiskListModel) jlsFiles.getModel();
+        dlm.delete(selIndices);
+    }
     /**
      * @param args the command line arguments
      */
@@ -552,6 +573,7 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jmEdit;
     private javax.swing.JMenu jmFile;
     private javax.swing.JMenuItem jmiDelete;
+    private javax.swing.JMenuItem jmiDeleteInstantly;
     private javax.swing.JMenuItem jmiDisplayStats;
     private javax.swing.JMenuItem jmiExit;
     private javax.swing.JMenuItem jmiExtract;
@@ -607,6 +629,7 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiMoveUp.setEnabled(indices.length > 0);
         jmiMoveDown.setEnabled(indices.length > 0);
         jmiDelete.setEnabled(indices.length > 0);
+        jmiDeleteInstantly.setEnabled(indices.length>0);
         jmiExtract.setEnabled(indices.length > 0);
 
     }
