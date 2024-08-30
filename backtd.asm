@@ -666,7 +666,7 @@ DVE_BAD2    lda #8                    ;Set RC=8
             jmp DVE_DONE
 
 
-DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.0'
+DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.1'
 DVE_T_EYE_L   equ *-DVE_T_EYE
 ;-------------------------------------------------------------------------------
 ; Verify if the disk is pristine 
@@ -1301,7 +1301,7 @@ DELAY_END          rts
 ;Reset POKEY
 ;-------------------------------------------------------------------------------
 RESET_POKEY        SUBENTRY 
-                   ldx #$0F
+                   ldx #$20
                    lda #0
 @                  sta $D200-1,X
                    dex
@@ -1391,7 +1391,7 @@ SM_KEY3     cmp #92                  ;Is that SHIFT-ESC?
 SM_DONE     sta ZP_RETCODE 
             SUBEXIT
 
-SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.0'
+SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.1'
 SM_M_TITLE1_L equ *-SM_M_TITLE1
 SM_M_TITLE2   dta c'(c) 2024 BAKTRA Software'
 SM_M_TITLE2_L equ *-SM_M_TITLE2
