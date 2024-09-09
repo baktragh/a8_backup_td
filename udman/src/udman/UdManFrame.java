@@ -57,6 +57,7 @@ public class UdManFrame extends javax.swing.JFrame {
         jmiExtract = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         jmiImport = new javax.swing.JMenuItem();
+        jmiPromoteDisk = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         jmiDisplayStats = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
@@ -174,6 +175,14 @@ public class UdManFrame extends javax.swing.JFrame {
             }
         });
         jmFile.add(jmiImport);
+
+        jmiPromoteDisk.setText("Promote disk to the latest format");
+        jmiPromoteDisk.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onPromoteDisk(evt);
+            }
+        });
+        jmFile.add(jmiPromoteDisk);
         jmFile.add(jSeparator7);
 
         jmiDisplayStats.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -504,6 +513,19 @@ public class UdManFrame extends javax.swing.JFrame {
        doDelete(true);
     }//GEN-LAST:event_onDeleteInstantly
 
+    private void onPromoteDisk(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPromoteDisk
+
+        DiskListModel dlm = (DiskListModel)(jlsFiles.getModel());
+        try {
+            dlm.getDisk().promoteToLatest();
+            setDisk(dlm.getDisk());
+        }
+        catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Promotion of the disk failed: "+e.toString());
+        }
+        
+    }//GEN-LAST:event_onPromoteDisk
+
     private void doDelete(boolean instantly) {
         int[] selIndices = jlsFiles.getSelectedIndices();
         if (selIndices.length < 1) {
@@ -582,6 +604,7 @@ public class UdManFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jmiMoveDown;
     private javax.swing.JMenuItem jmiMoveUp;
     private javax.swing.JMenuItem jmiOpen;
+    private javax.swing.JMenuItem jmiPromoteDisk;
     private javax.swing.JMenuItem jmiRename;
     private javax.swing.JMenuItem jmiSave;
     private javax.swing.JMenuItem jmiSaveAs;

@@ -512,6 +512,21 @@ public class UtilityDisk {
         return newProxy;
         
     }
+
+    void promoteToLatest() throws Exception {
+        InputStream is = Udman.class.getResourceAsStream("/udman/resources/ud_blank.atr");
+        UtilityDisk tempDisk =new UtilityDisk(is);
+        
+        this.atrHeaderData=tempDisk.atrHeaderData;
+        this.bootCodeData=tempDisk.bootCodeData;
+        this.idSectorData=tempDisk.idSectorData;
+        this.pristineSectorData=tempDisk.pristineSectorData;
+        
+        this.totalSectors=tempDisk.totalSectors;
+        this.dummySectorCount=tempDisk.dummySectorCount;
+        this.idString=tempDisk.idString;
+        
+    }
     
     
     private enum TapeScanState {
