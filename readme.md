@@ -86,6 +86,7 @@ UDMan (Utility Disk Manager) is an application for PC/Mac that allows the follow
 * Import monolithic binary files
 * Import Turbo 2000 files from tape images
 * Estimate recording time
+* Promote the utility disk to the latest version
  
 UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 
@@ -120,6 +121,10 @@ UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 7. Confirm extraction
 
 ## Changelog
+
+### Version 1.1.0d
+* UDMan version 0.15 allows promoting the opened utility disk to the latest version
+* Utility disk: Reset all registers of both POKEYs
 
 ### Version 1.1.0c
 * UDMan version 0.13 allows importing Turbo 2000 files from tape images. Also allows exporting multiple Turbo 2000 files to one single tape image.
