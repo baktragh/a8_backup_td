@@ -58,8 +58,8 @@ public class ExtractDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Extract files");
         addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                onClosing(evt);
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                onClosed(evt);
             }
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 onWindowOpened(evt);
@@ -271,7 +271,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         
     }//GEN-LAST:event_onWindowOpened
 
-    private void onClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosing
+    private void onClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_onClosed
         UIPersistence uip = UIPersistence.getInstance();
         uip.extractFolder=jtfOutputFolder.getText();
         uip.extractBinaries=jcbBinaries.isSelected();
@@ -280,9 +280,10 @@ public class ExtractDialog extends javax.swing.JDialog {
         uip.extractLongNames=jcbShortNames.isSelected();
         uip.extractSequentialNaming=jcbSequentialNaming.isSelected();
         uip.extractBigCas=jcbBigCas.isSelected();
-    }//GEN-LAST:event_onClosing
+    }//GEN-LAST:event_onClosed
 
     private void onCancel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onCancel
+        
         dispose();
     }//GEN-LAST:event_onCancel
 
