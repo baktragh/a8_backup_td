@@ -13,13 +13,13 @@ public class UIPersistence implements Serializable {
     String extractFolder;
     boolean extractTapes;
     boolean extractBinaries;
-    boolean extractForceBinaries;
     boolean extractSequentialNaming;
     boolean extractLongNames;
     String importFolder;
     boolean extractBigCas;
     boolean largeFont;
     Rectangle mainWindowBounds;
+    int overrideType;
     
     private UIPersistence() {
         
@@ -27,13 +27,13 @@ public class UIPersistence implements Serializable {
         extractFolder="";
         extractTapes=false;
         extractBinaries=true;
-        extractForceBinaries=false;
         extractSequentialNaming=false;
         extractLongNames=true;
         importFolder="";
         extractBigCas=false;
         largeFont=false;
         mainWindowBounds=null;
+        overrideType=0;
         
     }
     

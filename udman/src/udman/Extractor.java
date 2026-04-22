@@ -53,7 +53,7 @@ public class Extractor {
         int counter = 0;
         
         /*If nothing to extract, then just return*/
-        if (!ec.toBinary && !ec.toCas) return counter;
+        if (!ec.toFlatOrBinary && !ec.toCas) return counter;
 
         for (FileProxy oneProxy : ec.fileProxies) {
 
@@ -72,17 +72,34 @@ public class Extractor {
             String finalExtension;
 
             int fileType = oneProxy.getType();
-            if (fileType == 0x03 || fileType == 0x04 || ec.forceBinary) {
-                fullExtension = ".xex";
-                prefixExtension = ".x";
+            
+            /*When forcing binary, the extension is clear*/
+            if (ec.fileTypeOverride==FileTypeOverride.FORCE_BINARY) {
+                fullExtension=".xex";
+                prefixExtension=".x";
             }
-            else if (fileType == 0xFF || fileType == 0xFE) {
-                fullExtension = ".bas";
-                prefixExtension = ".b";
-            }
-            else {
+            
+            /*When forcing flat file, the extension is always .dat*/
+            else if (ec.fileTypeOverride==FileTypeOverride.FORCE_FLAT) {
                 fullExtension = ".dat";
                 prefixExtension = ".d";
+            }
+            
+            /*Without forcing, determine automatically*/
+            else {
+
+                if (fileType == 0x03 || fileType == 0x04) {
+                    fullExtension = ".xex";
+                    prefixExtension = ".x";
+                }
+                else if (fileType == 0xFF || fileType == 0xFE) {
+                    fullExtension = ".bas";
+                    prefixExtension = ".b";
+                }
+                else {
+                    fullExtension = ".dat";
+                    prefixExtension = ".d";
+                }
             }
 
             if (!ec.longNames && ec.sequentialNames) {
@@ -116,8 +133,8 @@ public class Extractor {
                 }
             }
 
-            if (ec.toBinary) {
-                exportBinary(oneProxy, finalName, fileType);
+            if (ec.toFlatOrBinary) {
+                exportFlatOrBinary(oneProxy, finalName, fileType);
             }
 
             if (ec.toCas) {
@@ -189,12 +206,27 @@ public class Extractor {
         return sb.toString();
     }
 
-    private void exportBinary(FileProxy oneProxy, String finalName, int fileType) throws Exception {
+    private void exportFlatOrBinary(FileProxy oneProxy, String finalName, int fileType) throws Exception {
 
         try (FileOutputStream fos = new FileOutputStream(ec.outputDirectory + System.getProperty("file.separator") + finalName);
                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
 
-            boolean doHeader = (fileType != 0x04 && (ec.forceBinary || (fileType == 0x03)));
+            /*Determine if to do header*/
+            boolean doHeader = false;
+            
+            /*If forcing binary, then do header, but not for file type 04*/
+            if (ec.fileTypeOverride==FileTypeOverride.FORCE_BINARY) {
+                if (fileType!=0x04) doHeader=true;
+            }
+            /*If forcing flat file, then never do header*/
+            else if (ec.fileTypeOverride==FileTypeOverride.FORCE_FLAT) {
+                doHeader=false;
+            }
+            /*Otherwise do header only for file type 0x03*/
+            else {
+                if (fileType==0x03) doHeader=true; else doHeader=false;
+            }
+            
 
             if (doHeader) {
                 bos.write(0xFF);
@@ -448,22 +480,41 @@ public class Extractor {
     }
     
     
+    public static enum FileTypeOverride {
+        
+        NONE("None"),
+        FORCE_BINARY("Force binary"),
+        FORCE_FLAT("Force flat");
+        
+        private final String displayName;
+        
+        private FileTypeOverride(String dName) {
+            displayName=dName;
+        }
+        
+        public String getDisplayname() {
+            return displayName;
+        }
+        
+        
+    }
+    
 
     public static class ExtractorConfig {
 
-        boolean toBinary;
+        boolean toFlatOrBinary;
         boolean toCas;
-        boolean forceBinary;
+        FileTypeOverride fileTypeOverride;
         boolean longNames;
         boolean sequentialNames;
         String outputDirectory;
         ArrayList<FileProxy> fileProxies;
         boolean singleCas;
 
-        public ExtractorConfig(boolean toBinary, boolean toCas, boolean forceBinary, boolean longNames, boolean sequentialNames, boolean singleCas, String outputDirectory, ArrayList<FileProxy> fileProxies) {
-            this.toBinary = toBinary;
+        public ExtractorConfig(boolean toBinary, boolean toCas, FileTypeOverride fileTypeOverride, boolean longNames, boolean sequentialNames, boolean singleCas, String outputDirectory, ArrayList<FileProxy> fileProxies) {
+            this.toFlatOrBinary = toBinary;
             this.toCas = toCas;
-            this.forceBinary = forceBinary;
+            this.fileTypeOverride = fileTypeOverride;
             this.longNames = longNames;
             this.sequentialNames = sequentialNames;
             this.singleCas=singleCas;

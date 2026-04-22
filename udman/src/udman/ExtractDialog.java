@@ -44,8 +44,10 @@ public class ExtractDialog extends javax.swing.JDialog {
         pSettings = new javax.swing.JPanel();
         jcbBinaries = new javax.swing.JCheckBox();
         jcbTapeImages = new javax.swing.JCheckBox();
-        jcbForceBinaries = new javax.swing.JCheckBox();
         jcbBigCas = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        lOverride = new javax.swing.JLabel();
+        jcoOverride = new javax.swing.JComboBox<>();
         pNaming = new javax.swing.JPanel();
         jcbShortNames = new javax.swing.JRadioButton();
         jrbLongames = new javax.swing.JRadioButton();
@@ -132,7 +134,6 @@ public class ExtractDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         pSettings.add(jcbBinaries, gridBagConstraints);
 
@@ -142,26 +143,34 @@ public class ExtractDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         pSettings.add(jcbTapeImages, gridBagConstraints);
-
-        jcbForceBinaries.setText("Extract all file types to binary files");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        pSettings.add(jcbForceBinaries, gridBagConstraints);
 
         jcbBigCas.setText("Extract to single tape image");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         pSettings.add(jcbBigCas, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+
+        lOverride.setText("Override file type:");
+        jPanel1.add(lOverride);
+
+        jcoOverride.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "No", "Binary", "Flat" }));
+        jPanel1.add(jcoOverride);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        pSettings.add(jPanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -219,7 +228,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         Extractor.ExtractorConfig ec = new Extractor.ExtractorConfig(
                 jcbBinaries.isSelected(),
                 jcbTapeImages.isSelected(),
-                jcbForceBinaries.isSelected(),
+                Extractor.FileTypeOverride.values()[jcoOverride.getSelectedIndex()],
                 jrbLongames.isSelected(),
                 jcbSequentialNaming.isSelected(),
                 jcbBigCas.isSelected(),
@@ -264,10 +273,10 @@ public class ExtractDialog extends javax.swing.JDialog {
         
         jcbBinaries.setSelected(uip.extractBinaries);
         jcbTapeImages.setSelected(uip.extractTapes);
-        jcbForceBinaries.setSelected(uip.extractForceBinaries);
         jrbLongames.setSelected(uip.extractLongNames);
         jcbSequentialNaming.setSelected(uip.extractSequentialNaming);
         jcbBigCas.setSelected(uip.extractBigCas);
+        jcoOverride.setSelectedIndex(uip.overrideType);
         
     }//GEN-LAST:event_onWindowOpened
 
@@ -276,7 +285,7 @@ public class ExtractDialog extends javax.swing.JDialog {
         uip.extractFolder=jtfOutputFolder.getText();
         uip.extractBinaries=jcbBinaries.isSelected();
         uip.extractTapes=jcbTapeImages.isSelected();
-        uip.extractForceBinaries=jcbForceBinaries.isSelected();
+        uip.overrideType=jcoOverride.getSelectedIndex();
         uip.extractLongNames=jcbShortNames.isSelected();
         uip.extractSequentialNaming=jcbSequentialNaming.isSelected();
         uip.extractBigCas=jcbBigCas.isSelected();
@@ -338,16 +347,18 @@ public class ExtractDialog extends javax.swing.JDialog {
     private javax.swing.JFileChooser fcOutputFolder;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton jbtCancel;
     private javax.swing.JButton jbtExtract;
     private javax.swing.JCheckBox jcbBigCas;
     private javax.swing.JCheckBox jcbBinaries;
-    private javax.swing.JCheckBox jcbForceBinaries;
     private javax.swing.JCheckBox jcbSequentialNaming;
     private javax.swing.JRadioButton jcbShortNames;
     private javax.swing.JCheckBox jcbTapeImages;
+    private javax.swing.JComboBox<String> jcoOverride;
     private javax.swing.JRadioButton jrbLongames;
     private javax.swing.JTextField jtfOutputFolder;
+    private javax.swing.JLabel lOverride;
     private javax.swing.JPanel pCommands;
     private javax.swing.JPanel pMain;
     private javax.swing.JPanel pNaming;
