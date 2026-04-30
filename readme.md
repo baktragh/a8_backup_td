@@ -122,6 +122,14 @@ UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 
 ## Changelog
 
+### Version 1.1.0e
+* Utility disk: Bug fix: Rarely, reading or writing of T2000 blocks could have been performed with ANTIC DMA on, ruining the reading or recording.
+* Utility disk: Bug fix: Attempt to record a file of 0 length resulted in the "Unable to read disk" message. Now an empty file is recorded.
+* Utility disk: Version is now 1.1.2
+* UDMan: When extracting to flat/binary files, you can override the file type to both binary and flat file.
+* UDMan: Version is now 0.16
+
+  
 ### Version 1.1.0d
 * UDMan version 0.15 allows promoting the opened utility disk to the latest version
 * Utility disk: Reset all registers of both POKEYs
