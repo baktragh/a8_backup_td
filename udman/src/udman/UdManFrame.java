@@ -673,11 +673,9 @@ public class UdManFrame extends javax.swing.JFrame {
         
         lSelection.setText(String.format("Selected files %d; %.2f KB",indices.length,totalBytes/1024.0));
         
-        
     }
-    
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.15";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.16";
 
     private JFileChooser fcImport = null;
 

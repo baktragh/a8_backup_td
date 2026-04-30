@@ -471,14 +471,17 @@ L0631       sta LTEMP         ;Keep the requested first byte value
             sta POKMSK
             sta IRQEN
             
-            clc               ;Clear work fields 
+            clc                 ;Clear work fields 
             ldy #0
             sty STATUS
             sty CHKSUM
             sty NMIEN
+            jsr WAIT_FOR_VBLANK ;Wait until screen gets settled
+            jsr WAIT_FOR_VBLANK ;
             sty DMACLT
-            php
+            ldy #0
 
+            php
 ;-------------------------------------------------------------------------------
 ; Wait for 256 pilot tone pulses
 ;-------------------------------------------------------------------------------           
@@ -666,7 +669,7 @@ DVE_BAD2    lda #8                    ;Set RC=8
             jmp DVE_DONE
 
 
-DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.1'
+DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.2'
 DVE_T_EYE_L   equ *-DVE_T_EYE
 ;-------------------------------------------------------------------------------
 ; Verify if the disk is pristine 
@@ -1279,11 +1282,15 @@ MSG_DISPLAY SUBENTRY
 ;-----------------------------------------------------------------------
 ; Wait for VBLANK
 ;-----------------------------------------------------------------------
-WAIT_FOR_VBLANK    lda #VBI_VCOUNT             ;Get the desired value
+WAIT_FOR_VBLANK    pha
+                   php
+                   lda #VBI_VCOUNT             ;Get the desired value
 WFV_1              cmp VCOUNT                  ;Check
                    bne WFV_1                   ;If equal, keep checking
 WFV_2              cmp VCOUNT
                    beq WFV_2                   
+                   plp
+                   pla
                    rts             
 ;-----------------------------------------------------------------------
 ; Short delay
@@ -1391,9 +1398,9 @@ SM_KEY3     cmp #92                  ;Is that SHIFT-ESC?
 SM_DONE     sta ZP_RETCODE 
             SUBEXIT
 
-SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.1'
+SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.2'
 SM_M_TITLE1_L equ *-SM_M_TITLE1
-SM_M_TITLE2   dta c'(c) 2024 BAKTRA Software'
+SM_M_TITLE2   dta c'(c) 2024-2026 BAKTRA Software'
 SM_M_TITLE2_L equ *-SM_M_TITLE2
 
 SM_M_ITEM0    dta c'(L) List files on disk'
@@ -1746,7 +1753,15 @@ OP_DH_10    jsr DISK_READBYTE     ;Get the total length
             jsr DISK_READBYTE
             sta ZP_WK_LENHI
 
-            lda #0                ;We have a length and counter
+            lda ZP_WK_LENHI       ;Check for zero total length
+            bne OP_DH_20
+            lda ZP_WK_LENLO
+            bne OP_DH_20
+
+OP_DH_15    jmp OP_FILELOOP_END   ;When the length is zero, no reading
+
+
+OP_DH_20    lda #0                ;We have a length and counter
             sta ZP_WK_LO
             sta ZP_WK_HI
             
@@ -2041,17 +2056,21 @@ WR_GBYTE_W4    dey                    ;Keep waiting
 WR_TERM        lda #64
                sta NMIEN
                sta IRQEN
-               jsr WAIT_FOR_VBLANK   
                lda #34                ;New
                sta DMACLT             ;New
+               jsr WAIT_FOR_VBLANK    ;New
                rts
                
 WR_RESET_ALL   ldy #0
                sty STATUS
                sty CHKSUM
                sty NMIEN
-               sty DMACLT
                sty IRQEN
+               jsr WAIT_FOR_VBLANK
+               jsr WAIT_FOR_VBLANK
+               ldy #0
+               sty DMACLT
+
                clc
                rts
 
