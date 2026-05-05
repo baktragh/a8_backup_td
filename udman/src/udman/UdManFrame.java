@@ -675,7 +675,7 @@ public class UdManFrame extends javax.swing.JFrame {
         
     }
 
-    private final String TITLE_BASE = "Backup T/D UDMan 0.16";
+    private final String TITLE_BASE = "Backup T/D UDMan 0.17";
 
     private JFileChooser fcImport = null;
 

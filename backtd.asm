@@ -121,6 +121,11 @@ PC_FIRST
             sta W_FIRST_BANK
             lda #0            ;No more first run.
             sta W_FIRST_RUN
+            
+            ;Check for 4 banks of extended memory
+            jsr CHECK_XMS
+            
+            ;Go to menu
             jmp PC_DO_MENU
 
 
@@ -669,7 +674,7 @@ DVE_BAD2    lda #8                    ;Set RC=8
             jmp DVE_DONE
 
 
-DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.2'
+DVE_T_EYE     dta c'TURGEN BACKUP T/D 1.1.3'
 DVE_T_EYE_L   equ *-DVE_T_EYE
 ;-------------------------------------------------------------------------------
 ; Verify if the disk is pristine 
@@ -1325,6 +1330,72 @@ S_LOOP2     lda CONSOL
             cmp #6
             bne S_LOOP2
             SUBEXIT
+
+;-------------------------------------------------------------------------------
+; Check presence of XMS.
+;-------------------------------------------------------------------------------            
+CHECK_XMS   SUBENTRY
+            
+            ldy #4
+            lda W_FIRST_BANK            ;Start with first bank
+
+;Write 1,2,3,4 to the banks            
+CX_LOOP1    sta PORTB                   ;Set PORTB
+            nop
+            sty $4000                   ;Stor value to the bank
+            
+            clc                         ;Increment the bank
+            adc #4
+            
+            dey
+            bne CX_LOOP1
+@            
+;Check if 1,2,3,4 is in the banks
+            ldy #4                      ;Start with the first bank
+            lda W_FIRST_BANK
+            
+CX_LOOP2    sta PORTB                  ;Set PORTB
+ 
+            pha                        ;Preserve A                                             
+            lda $4000                  ;Get the value
+            sta W_BANK_CHECK           ;Store elsewhere
+            pla                        ;Restore A
+            cpy W_BANK_CHECK           ;Check if the value matches
+            bne CX_NOXMS               ;No, there is no XMS
+            
+            clc 
+            adc #4
+            
+            dey
+            bne CX_LOOP2
+            
+@           jmp CX_EXIT
+
+;Handle no XMS is present
+CX_NOXMS
+            lda W_FIRST_BANK
+            sta PORTB
+            jsr MSG_CLR
+            COPYMSG CX_M_NOXMS CX_M_NOXMS_L
+            jsr MSG_DISPLAY
+            jsr MSG_CLR
+            COPYMSG CX_M_REBOOT CX_M_REBOOT_L
+            jsr MSG_DISPLAY
+            
+CX_REBLOOP  jmp CX_REBLOOP
+            
+;Exit
+CX_EXIT
+            lda W_FIRST_BANK
+            sta PORTB
+            
+            SUBEXIT        
+            
+CX_M_NOXMS   dta 125,c'Extra 64 KB of memory not detected.'
+CX_M_NOXMS_L equ *-CX_M_NOXMS
+CX_M_REBOOT  dta c'Press RESET to reboot'
+CX_M_REBOOT_L equ *-CX_M_REBOOT
+                
 ;-------------------------------------------------------------------------------
 ; Endless loop
 ;-------------------------------------------------------------------------------
@@ -1398,7 +1469,7 @@ SM_KEY3     cmp #92                  ;Is that SHIFT-ESC?
 SM_DONE     sta ZP_RETCODE 
             SUBEXIT
 
-SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.2'
+SM_M_TITLE1   dta 125,c'BACKUP T/D Utility Disk 1.1.3'
 SM_M_TITLE1_L equ *-SM_M_TITLE1
 SM_M_TITLE2   dta c'(c) 2024-2026 BAKTRA Software'
 SM_M_TITLE2_L equ *-SM_M_TITLE2
@@ -2105,6 +2176,7 @@ W_REC_SEPDURATION dta 10
 ;Miscellaneous
 W_FIRST_RUN  dta $FF
 W_FIRST_BANK dta 0
+W_BANK_CHECK dta 0
 
 ;Writing data to disk
 W_WRITE_LASTH_SECLO dta 0
