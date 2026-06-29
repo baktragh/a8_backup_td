@@ -123,7 +123,7 @@ UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 ## Changelog
 
 ### Version 1.1.0f
-* Utility disk: After boot, if 64 KB of extended RAM is not detected, processing terminates. This prevents data corrputioon when the utility disk is accidentally operated without the extended RAM.
+* Utility disk: After boot, if 64 KB of extended RAM is not detected, processing terminates. This prevents data corruption when the utility disk is accidentally operated without the extended RAM.
 
 ### Version 1.1.0e
 * Utility disk: Bug fix: Rarely, reading or writing of T2000 blocks could have been performed with ANTIC DMA on, ruining the reading or recording.
