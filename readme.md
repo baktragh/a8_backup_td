@@ -7,7 +7,7 @@ BACKUP T/D is a Turbo 2000 tape preservation toolkit for 8-bit Atari computers.
 ### How BACKUP T/D Works
 
 For tape preservation, the toolkit allows you to use the most efficient means:
-1. Your data recorder with Turbo 2000 upgrade to read and record tapes. There is no better device than the data recorder.
+1. Your data recorder with Turbo 2000 upgrade to read and record tapes.
 2. Floppy disk drive replacement/emulator to store the preserved data
 3. Computer emulator to extract the preserved data for further processing
 4. Extended memory of your Atari computer to allow 64 KB buffer for data
@@ -121,6 +121,9 @@ UDMan requires JRE or JDK 8. JRE or JDK 17 and above is recommended.
 7. Confirm extraction
 
 ## Changelog
+
+### Version 1.1.0f
+* Utility disk: After boot, if 64 KB of extended RAM is not detected, processing terminates. This prevents data corrputioon when the utility disk is accidentally operated without the extended RAM.
 
 ### Version 1.1.0e
 * Utility disk: Bug fix: Rarely, reading or writing of T2000 blocks could have been performed with ANTIC DMA on, ruining the reading or recording.
